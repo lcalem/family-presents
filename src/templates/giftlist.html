@@ -11,7 +11,7 @@
             <dt class="col-sm-3">Où</dt>
             <dd class="col-sm-9">{{ gift.location }}</dd>
             <dt class="col-sm-3">Prix</dt>
-            <dd class="col-sm-9">environ {{ gift.price }} €</dd>
+            <dd class="col-sm-9">~{{ gift.price }} €</dd>
             <dt class="col-sm-3">Lien</dt>
             <dd class="col-sm-9"><a href="{{ gift.url }}">cliquez ici</a></dd>
         </dl>
@@ -26,7 +26,7 @@
                     </div>
                     <input id="gift-amount-{{ loop.index }}" type="text" class="form-control" aria-label="Montant">
                     <div class="input-group-append btn-validate">
-                        <span class="input-group-text btn btn-success">Valider</span>
+                        <span class="input-group-text btn btn-success" onclick="gift({{ loop.index }}, '{{ gift._id }}', {{ gift.price }});">Valider</span>
                     </div>
                 </div>
             </div>

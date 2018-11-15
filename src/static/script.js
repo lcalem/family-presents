@@ -15,8 +15,19 @@ function submitGift(form) {
     return false;
 }
 
+function popError(message) {
+    var alert = document.getElementById('message');
+    var alertMessage = document.getElementById('actual-message');
+    alertMessage.innerHTML = message;
+    alert.style.display = 'block';
+}
+
+function hideError(message) {
+    var alert = document.getElementById('message');
+    alert.style.display = 'none';
+}
+
 function participate(btn_id) {
-    console.log("switching buttons " + btn_id)
     var btnParticipate = document.getElementById('btn-participate-' + btn_id);
     var divGift = document.getElementById('div-gift-' + btn_id);
 
@@ -24,6 +35,11 @@ function participate(btn_id) {
     divGift.style.display = 'flex';
 }
 
-function gift(div_id) {
-    var amount = document.getElementById('gift-amount-' + div_id);
+function gift(div_id, gift_id, gift_price) {
+    var amount = document.getElementById('gift-amount-' + div_id.toString()).value;
+
+    if (amount > gift_price) {
+        popError("Impossible de participer plus que le prix du cadeau !")
+    }
+    console.log("participating " + amount.toString() + " to gift " + gift_id);
 }

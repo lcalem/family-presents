@@ -154,10 +154,19 @@ with app.app_context():
             template_gift['image'] = gift['image'].decode()
             template_gift['owner'] = str(user['_id'])
             template_gift['owner_name'] = user["name"]
+            template_gift['_id'] = str(gift["_id"])
 
             template_data["gifts"].append(template_gift)
 
         return render_template('giftlist.html', **template_data)
+
+
+    @app.route('/participate', methods=["POST"])
+    def participate():
+        if not session.get('logged_in'):
+            return redirect("/", code=302)
+
+        
 
     
     @app.route('/login', methods=['POST'])

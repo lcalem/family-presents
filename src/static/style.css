@@ -206,3 +206,17 @@ a:hover, a:visited, a:link, a:active {
 /* .dl-horizontal dt, .dl-horizontal dd {
     display: inline-block;
 } */
+
+
+#message {
+    position: fixed;
+    top: 30px;
+    left: 500px;
+    width: 500px;
+    margin: auto;
+    display: none;
+
+}
+#inner-message {
+    margin: 0 auto;
+}
