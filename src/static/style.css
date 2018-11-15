@@ -1,0 +1,149 @@
+* {
+    box-sizing: border-box;
+}
+    
+*:focus {
+    outline: none;
+}
+
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #333;
+}
+
+ul {
+    list-style-type: none;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+
+#login-body {
+    background-color: #3498DB;
+    padding: 50px;
+}
+
+.login {
+    margin: 20px auto;
+    width: 300px;
+}
+
+.login-screen {
+    background-color: #FFF;
+    padding: 20px;
+    border-radius: 5px
+}
+    
+.app-title {
+    text-align: center;
+    color: #777;
+}
+    
+.login-form {
+    text-align: center;
+}
+
+.control-group {
+    margin-bottom: 10px;
+}
+    
+.login input {
+    text-align: center;
+    background-color: #ECF0F1;
+    border: 2px solid transparent;
+    border-radius: 3px;
+    font-size: 16px;
+    font-weight: 200;
+    padding: 10px 0;
+    width: 250px;
+    transition: border .5s;
+}
+    
+.login input:focus {
+    border: 2px solid #3498DB;
+    box-shadow: none;
+}
+    
+.login .btn {
+    border: 2px solid transparent;
+    background: #3498DB;
+    color: #ffffff;
+    font-size: 16px;
+    line-height: 25px;
+    padding: 10px 0;
+    text-decoration: none;
+    text-shadow: none;
+    border-radius: 3px;
+    box-shadow: none;
+    transition: 0.25s;
+    display: block;
+    width: 250px;
+    margin: 0 auto;
+}
+    
+.login .btn:hover {
+    background-color: #2980B9;
+}
+    
+.login-link {
+    font-size: 12px;
+    color: #444;
+    display: block;
+    margin-top: 12px;
+}
+
+.header ul {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+    /* background-color: #3498DB; */
+}
+
+.header li {
+    float: left;
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    display: inline;
+}
+
+.header li h1 {
+    width: 200px;
+    font-size: 18px;
+}
+
+.header li a {
+    width: 60px;
+    color: #DDD;
+}
+
+#header li a:hover {
+    background-color: #3498DB;
+}
+
+.header li.connect-msg {
+    width: 300px;
+    float: right;
+}
+
+.leftpanel {
+    border: 1px solid #e7e7e7;
+    background-color: #f3f3f3;
+    width: 300px;
+    min-height: 400px;
+    margin: 30px 30px 30px 30px;
+    padding: 40px 10px 10px 10px;
+}
+
+.nav-header {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #999;
+    padding-bottom: 5px;
+    font-weight: bold;
+}
