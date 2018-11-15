@@ -170,3 +170,39 @@ a:hover, a:visited, a:link, a:active {
 .addgift-btn {
     margin-top: 20px;
 }
+
+.gift-box {
+    width: 300px;
+    height: 530px;
+    border: 1px solid #e7e7e7;
+    background-color: #f3f3f3;
+    padding: 20px;
+}
+
+.gift-box .gift-img {
+    display: block;
+    margin: auto;
+}
+
+.gift-box .gift-title {
+    display: inline-block;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 20px 10px 10px 0px;
+}
+
+.gift-box dl {
+    margin-bottom: 0px;
+}  
+
+.btn-participate, .btn-gift {
+    float: right;
+}
+
+.div-gift {
+    display: none;
+}
+
+/* .dl-horizontal dt, .dl-horizontal dd {
+    display: inline-block;
+} */

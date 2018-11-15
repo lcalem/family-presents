@@ -144,6 +144,7 @@ with app.app_context():
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
+        user = db.users.find_one({"_id": ObjectId(userid)})
         gifts = db.gifts.find({"owner": ObjectId(userid)})
         template_data = get_common_info(session)
         template_data["gifts"] = list()
@@ -151,6 +152,9 @@ with app.app_context():
         for gift in db.gifts.find({"owner": ObjectId(userid)}):
             template_gift = {k: v for k, v in gift.items() if k in ["title", "price", "location", "url"]}
             template_gift['image'] = gift['image'].decode()
+            template_gift['owner'] = str(user['_id'])
+            template_gift['owner_name'] = user["name"]
+
             template_data["gifts"].append(template_gift)
 
         return render_template('giftlist.html', **template_data)

@@ -3,9 +3,37 @@
 
 {% for gift in gifts %}
     <div class="gift-box">
-        <span>{{ gift.title }}</span>
-        <img src="data:image/png;base64,{{ gift.image }}">
+        <img class="gift-img" src="data:image/png;base64,{{ gift.image }}" width="150px" height="250px">
+        <span class="gift-title">{{ gift.title }}</span><br/>
+        <dl class="row">
+            <dt class="col-sm-3">Pour</dt>
+            <dd class="col-sm-9">{{ gift.owner_name }}</dd>
+            <dt class="col-sm-3">Où</dt>
+            <dd class="col-sm-9">{{ gift.location }}</dd>
+            <dt class="col-sm-3">Prix</dt>
+            <dd class="col-sm-9">environ {{ gift.price }} €</dd>
+            <dt class="col-sm-3">Lien</dt>
+            <dd class="col-sm-9"><a href="{{ gift.url }}">cliquez ici</a></dd>
+        </dl>
+
+        {% if gift.owner == userid %}
+            <button type="button" class="btn btn-primary btn-participate" id="btn-participate-{{ loop.index }}" onclick="participate({{ loop.index }});">Participer</button>
+            
+            <div class="div-gift" id="div-gift-{{ loop.index }}">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">€</span>
+                    </div>
+                    <input id="gift-amount-{{ loop.index }}" type="text" class="form-control" aria-label="Montant">
+                    <div class="input-group-append btn-validate">
+                        <span class="input-group-text btn btn-success">Valider</span>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
     </div>
 {% endfor %}
 
 {% endblock %}
+
