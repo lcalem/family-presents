@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Cadeaux!</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</head>
+
+<body id="home">
+
+<div id="panel">
+
+    <div class="header">
+        <ul>
+            <li><h1>Cadeaux !</h1></li>
+            <li><a href="/home">Home</a></li>
+            <li><a href="/logout">Logout</a></li>
+            <li class="connect-msg"><span>Connecté en tant que <strong>{{ username }}</strong></span></li>
+        </ul>  
+    </div>
+
+    <div class="leftpanel">
+        <ul class="personal-actions">
+            <li class="nav-header">ma liste</li>
+            <li><a href="/giftlist/user/{{ userid }}">Ma liste de cadeaux</a></li>
+            <li><a href="/addgift">Ajouter un souhait</a></li>
+        </ul>
+
+        <ul class="gift-listings">
+            <li class="nav-header">offrir</li>
+            {% for person in people %}
+                {% if person.userid != userid %}
+                    <li><a href="/giftlist/user/{{ person.userid }}">Les cadeaux de {{ person.name }}</a></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+
+        <ul class="shortcuts">
+            <li class="nav-header">raccourcis</li>
+            <li><a href="/giftlist/available">Les cadeaux non offerts</a></li>
+            <li><a href="/giftlist/completed">Les cadeaux déjà offerts</a></li>
+            <li><a href="/giftlist/started">Les cadeaux où il manque une contribution</a></li>
+            <li><a href="/gifted/from/{{ userid }}">Les cadeaux où j'ai participé</a></li>
+        </ul>
+
+    </div>
+
+    <div class="content">{% block content %}{% endblock %}</div>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+</body>
+</html>

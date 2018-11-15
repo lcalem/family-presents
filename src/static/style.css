@@ -15,7 +15,7 @@ ul {
     list-style-type: none;
 }
 
-a:hover {
+a:hover, a:visited, a:link, a:active {
     text-decoration: none;
 }
 
@@ -122,8 +122,9 @@ a:hover {
     color: #DDD;
 }
 
-#header li a:hover {
-    background-color: #3498DB;
+.header li a:hover {
+    /* background-color: #3498DB; */
+    text-decoration: none;
 }
 
 .header li.connect-msg {
@@ -132,6 +133,7 @@ a:hover {
 }
 
 .leftpanel {
+    display: inline-block;
     border: 1px solid #e7e7e7;
     background-color: #f3f3f3;
     width: 300px;
@@ -140,10 +142,31 @@ a:hover {
     padding: 40px 10px 10px 10px;
 }
 
+.leftpanel a:hover {
+    text-decoration: none;
+}
+
 .nav-header {
     font-size: 11px;
     text-transform: uppercase;
     color: #999;
     padding-bottom: 5px;
     font-weight: bold;
+}
+
+.content {
+    display: inline-block;
+    margin: 30px;
+    min-height: 400px;
+    vertical-align: top;
+    width: 800px;
+}
+
+.addgift h1, .message h1 {
+    font-size: 32px;
+    margin: 10px 0px 20px 0px;
+}
+
+.addgift-btn {
+    margin-top: 20px;
 }

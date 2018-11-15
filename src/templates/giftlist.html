@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block content %}
+
+{% for gift in gifts %}
+    <div class="gift-box">
+        <span>{{ gift.title }}</span>
+        <img src="data:image/png;base64,{{ gift.image }}">
+    </div>
+{% endfor %}
+
+{% endblock %}

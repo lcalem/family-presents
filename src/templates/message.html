@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="message alert alert-{{ message_type }}">
+        <h1>Message</h1>
+        <p>{{ message_content }}</p>
+    </div>
+{% endblock %}
