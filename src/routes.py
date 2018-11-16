@@ -149,6 +149,20 @@ def format_gift(db_gift):
     return template_gift
 
 
+def render_giftlist(session, gifts):
+    '''
+    renders the giftlist or a generic message if there is no gift to display
+    '''
+
+    if len(gifts):
+        template_data = get_common_info(session)
+        template_data["gifts"] = gifts
+        return render_template('giftlist.html', **template_data)
+
+    else:
+        return message_template(session, "info", "Il n'y a pas de cadeaux à afficher ici !")
+
+
 with app.app_context():
 
     @app.route('/')
@@ -202,14 +216,12 @@ with app.app_context():
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
-        template_data = get_common_info(session)
-        template_data["gifts"] = list()
-
+        gifts = list()
         for gift in db.gifts.find({"owner": ObjectId(userid)}):
             template_gift = format_gift(gift)
-            template_data["gifts"].append(template_gift)
+            gifts.append(template_gift)
 
-        return render_template('giftlist.html', **template_data)
+        return render_giftlist(session, gifts)
 
 
     @app.route('/giftlist/available', methods=["GET"])
@@ -217,18 +229,16 @@ with app.app_context():
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
-        template_data = get_common_info(session)
-        template_data["gifts"] = list()
-
+        gifts = list()
         for gift in db.gifts.find({}):
             if str(gift["owner"]) == session.get('logged_as'):
                 continue
             
             if gift["remaining_price"] == gift["price"]:
                 template_gift = format_gift(gift)
-                template_data["gifts"].append(template_gift)
+                gifts.append(template_gift)
 
-        return render_template('giftlist.html', **template_data)
+        return render_giftlist(session, gifts)
 
     
     @app.route('/giftlist/completed', methods=["GET"])
@@ -236,18 +246,16 @@ with app.app_context():
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
-        template_data = get_common_info(session)
-        template_data["gifts"] = list()
-
+        gifts = list()
         for gift in db.gifts.find({}):
             if str(gift["owner"]) == session.get('logged_as'):
                 continue
             
             if gift["remaining_price"] == 0:
                 template_gift = format_gift(gift)
-                template_data["gifts"].append(template_gift)
+                gifts.append(template_gift)
 
-        return render_template('giftlist.html', **template_data)
+        return render_giftlist(session, gifts)
 
     
     @app.route('/giftlist/started', methods=["GET"])
@@ -255,18 +263,16 @@ with app.app_context():
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
-        template_data = get_common_info(session)
-        template_data["gifts"] = list()
-
+        gifts = list()
         for gift in db.gifts.find({}):
             if str(gift["owner"]) == session.get('logged_as'):
                 continue
             
             if gift["remaining_price"] > 0 and gift["remaining_price"] < gift["price"]:
                 template_gift = format_gift(gift)
-                template_data["gifts"].append(template_gift)
+                gifts.append(template_gift)
 
-        return render_template('giftlist.html', **template_data)
+        return render_giftlist(session, gifts)
 
     
     @app.route('/giftlist/participated/<userid>', methods=["GET"])
@@ -274,18 +280,16 @@ with app.app_context():
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
-        template_data = get_common_info(session)
-        template_data["gifts"] = list()
-
+        gifts = list()
         for gift in db.gifts.find({}):
             if str(gift["owner"]) == session.get('logged_as'):
                 continue
             
             if str(userid) in [str(participation["user"]) for participation in gift.get("participations", [])]:
                 template_gift = format_gift(gift)
-                template_data["gifts"].append(template_gift)
+                gifts.append(template_gift)
 
-        return render_template('giftlist.html', **template_data)
+        return render_giftlist(session, gifts)
 
 
     @app.route('/participate', methods=["POST"])

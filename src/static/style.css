@@ -237,3 +237,17 @@ a:hover, a:visited, a:link, a:active {
     margin: 0px 10px 0px -35px;
     width: 25px;
 }
+
+.gifted-badge {
+    margin: -5px 0px 0px 20px;
+    vertical-align: top;
+}
+
+.blabla {
+    width: 800px;
+    margin-bottom: 50px;
+}
+
+.blabla ul {
+    list-style-type: disc;
+}
