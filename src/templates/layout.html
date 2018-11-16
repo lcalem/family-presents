@@ -42,7 +42,7 @@
             <li class="nav-header">offrir</li>
             {% for person in people %}
                 {% if person.userid != userid %}
-                    <li><a href="/giftlist/user/{{ person.userid }}">Les cadeaux de {{ person.name }}</a></li>
+                    <li><span class="list-badge badge badge-pill badge-primary">{{ person.remaining_gifts }}</span><a href="/giftlist/user/{{ person.userid }}">Les cadeaux de {{ person.name }}</a></li>
                 {% endif %}
             {% endfor %}
         </ul>

@@ -159,7 +159,7 @@ a:hover, a:visited, a:link, a:active {
     margin: 30px;
     min-height: 400px;
     vertical-align: top;
-    width: 800px;
+    width: 1000px;
 }
 
 .addgift h1, .message h1 {
@@ -177,11 +177,27 @@ a:hover, a:visited, a:link, a:active {
     border: 1px solid #e7e7e7;
     background-color: #f3f3f3;
     padding: 20px;
+    display: inline-block;
+    margin: 0px 20px 20px 0px;
 }
 
-.gift-box .gift-img {
-    display: block;
+.gift-img {
     margin: auto;
+    max-width: 260px;
+    max-height: 250px;
+    vertical-align: middle;
+}
+
+.img-helper {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.gift-img-wrap {
+    height: 250px;
+    width: 260px;
+    text-align: center;
 }
 
 .gift-box .gift-title {
@@ -189,6 +205,7 @@ a:hover, a:visited, a:link, a:active {
     font-size: 18px;
     font-weight: bold;
     margin: 20px 10px 10px 0px;
+    height: 54px;
 }
 
 .gift-box dl {
@@ -203,11 +220,6 @@ a:hover, a:visited, a:link, a:active {
     display: none;
 }
 
-/* .dl-horizontal dt, .dl-horizontal dd {
-    display: inline-block;
-} */
-
-
 #message {
     position: fixed;
     top: 30px;
@@ -219,4 +231,9 @@ a:hover, a:visited, a:link, a:active {
 }
 #inner-message {
     margin: 0 auto;
+}
+
+.list-badge {
+    margin: 0px 10px 0px -35px;
+    width: 25px;
 }

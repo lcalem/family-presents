@@ -11,6 +11,7 @@ import sys
 import tempfile
 
 from bson import ObjectId
+from collections import defaultdict
 from io import BytesIO
 
 from collections import defaultdict
@@ -78,12 +79,33 @@ def format_gift_data(raw_data):
     return gift_data
 
 
+def count_remaining_gifts():
+    '''
+    key: user / value: remaining gifts for this user
+    '''
+    gifts = defaultdict(lambda: 0)
+    for gift in db.gifts.find({}):
+        if gift["remaining_price"] > 0:
+            gifts[str(gift["owner"])] += 1
+    return gifts
+
 def get_common_info(sess):
-    return {
+    info = {
         "userid": sess.get('logged_as'),
-        "username": sess.get('display_name'),
-        "people": [{"name": user["name"], "userid": str(user["_id"])} for user in db.users.find({})]
+        "username": sess.get('display_name')
     }
+
+    people = list()
+    gifts = count_remaining_gifts()
+    for user in db.users.find({}):
+        people.append({
+            "name": user["name"],
+            "userid": str(user["_id"]),
+            "remaining_gifts": gifts.get(str(user["_id"]), 0)
+        })
+    info["people"] = people
+
+    return info
 
 
 def message_template(sess, message_type, message):

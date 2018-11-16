@@ -3,7 +3,9 @@
 
 {% for gift in gifts %}
     <div class="gift-box">
-        <img class="gift-img" src="data:image/png;base64,{{ gift.image }}" width="150px" height="250px">
+        <div class="gift-img-wrap">
+            <span class="img-helper"></span><img class="gift-img" src="data:image/png;base64,{{ gift.image }}" />
+        </div>
         <span class="gift-title">{{ gift.title }}</span><br/>
         <dl class="row">
             <dt class="col-sm-3">Pour</dt>
@@ -16,7 +18,7 @@
             <dd class="col-sm-9"><a href="{{ gift.url }}">cliquez ici</a></dd>
         </dl>
 
-        {% if gift.owner == userid %}
+        {% if gift.owner != userid %}
             <button type="button" class="btn btn-primary btn-participate" id="btn-participate-{{ loop.index }}" onclick="participate({{ loop.index }});">Participer</button>
             
             <form class="form-gift" method="POST" action="/participate">
