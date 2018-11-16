@@ -11,7 +11,7 @@
             <dt class="col-sm-3">Où</dt>
             <dd class="col-sm-9">{{ gift.location }}</dd>
             <dt class="col-sm-3">Prix</dt>
-            <dd class="col-sm-9">~{{ gift.price }} €</dd>
+            <dd class="col-sm-9">~{{ gift.price }} € (reste {{ gift.remaining_price }})</dd>
             <dt class="col-sm-3">Lien</dt>
             <dd class="col-sm-9"><a href="{{ gift.url }}">cliquez ici</a></dd>
         </dl>
@@ -19,17 +19,22 @@
         {% if gift.owner == userid %}
             <button type="button" class="btn btn-primary btn-participate" id="btn-participate-{{ loop.index }}" onclick="participate({{ loop.index }});">Participer</button>
             
-            <div class="div-gift" id="div-gift-{{ loop.index }}">
-                <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">€</span>
-                    </div>
-                    <input id="gift-amount-{{ loop.index }}" type="text" class="form-control" aria-label="Montant">
-                    <div class="input-group-append btn-validate">
-                        <span class="input-group-text btn btn-success" onclick="gift({{ loop.index }}, '{{ gift._id }}', {{ gift.price }});">Valider</span>
+            <form class="form-gift" method="POST" action="/participate">
+                <div class="div-gift" id="div-gift-{{ loop.index }}">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">€</span>
+                        </div>
+                        
+                        <input name="gift_id" value="{{gift._id}}" hidden />
+                        <input name="amount" id="gift-amount-{{ loop.index }}" type="text" class="form-control" aria-label="Montant" onkeypress="return checkNumber(event, {{gift.remaining_price}})" />
+                        <div class="input-group-append btn-validate">
+                            <button type="submit" class="input-group-text btn btn-success">Valider</button>
+                        </div>
+                        
                     </div>
                 </div>
-            </div>
+            </form>
         {% endif %}
 
     </div>

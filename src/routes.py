@@ -56,6 +56,8 @@ def format_gift_data(raw_data):
         "location": raw_data["location"][0]
     }
 
+    gift_data["remaining_price"] = gift_data["price"]
+
     # TODO check urls
     gift_data["url"] = raw_data["link"][0]
 
@@ -83,6 +85,12 @@ def get_common_info(sess):
         "people": [{"name": user["name"], "userid": str(user["_id"])} for user in db.users.find({})]
     }
 
+
+def message_template(sess, message_type, message):
+    template_data = get_common_info(sess)
+    template_data["message_type"] = message_type
+    template_data["message_content"] = message
+    return render_template('message.html', **template_data)
 
 
 with app.app_context():
@@ -128,15 +136,9 @@ with app.app_context():
             gift_data["owner"] = ObjectId(session.get('logged_as'))
             db.gifts.insert(gift_data)
         except Exception as e:
-            template_data = get_common_info(session)
-            template_data["message_type"] = "danger"
-            template_data["message_content"] = "Il y a eu une erreur dans le format de vos données, veuillez réessayer. \n %s" % str(e)
-            return render_template('message.html', **template_data)
+            return message_template(session, "danger", "Il y a eu une erreur dans le format de vos données, veuillez réessayer. \n %s" % str(e))
 
-        template_data = get_common_info(session)
-        template_data["message_type"] = "success"
-        template_data["message_content"] = "Souhait ajouté !"
-        return render_template('message.html', **template_data)
+        return message_template(session, "success", "Souhait ajouté !")
 
     
     @app.route('/giftlist/user/<userid>', methods=["GET"])
@@ -150,7 +152,7 @@ with app.app_context():
         template_data["gifts"] = list()
 
         for gift in db.gifts.find({"owner": ObjectId(userid)}):
-            template_gift = {k: v for k, v in gift.items() if k in ["title", "price", "location", "url"]}
+            template_gift = {k: v for k, v in gift.items() if k in ["title", "price", "location", "url", "remaining_price"]}
             template_gift['image'] = gift['image'].decode()
             template_gift['owner'] = str(user['_id'])
             template_gift['owner_name'] = user["name"]
@@ -163,12 +165,35 @@ with app.app_context():
 
     @app.route('/participate', methods=["POST"])
     def participate():
+        '''
+        TODO: manage concurrency when we have a big enough family lol
+        '''
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
-        
-
+        data = request.form.to_dict(flat=True)
+        print("participation data %s" % str(data), file=sys.stderr)
+        if "amount" not in data or "gift_id" not in data:
+            return message_template(session, "danger", "participation must contain 'participation' and 'gift_id'!")
     
+        gift = db.gifts.find_one({"_id": ObjectId(data["gift_id"])})
+        if not gift:
+            return message_template(session, "danger", "invalid gift_id")
+
+        try:
+            if float(data["amount"]) > gift["remaining_price"]:
+                return message_template(session, "danger", "invalid participation! Amount must be less than the remaining price of the gift")
+        except ValueError as e:
+            return message_template(session, "danger", "participation must be a valid number")
+
+        db.gifts.update_one({"_id": ObjectId(data["gift_id"])}, {
+            "$set": {"remaining_price": gift["remaining_price"] - float(data["amount"])},
+            "$push": {"participations": {"user": ObjectId(session.get('logged_as')), "amount": data["amount"]}}
+        })
+
+        return message_template(session, "success", "Votre participation a bien été enregistrée !")
+
+
     @app.route('/login', methods=['POST'])
     def login():
         '''
