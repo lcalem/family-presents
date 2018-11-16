@@ -7,7 +7,7 @@
             <span class="img-helper"></span><img class="gift-img" src="data:image/png;base64,{{ gift.image }}" />
         </div>
         <span class="gift-title">{{ gift.title }}</span><br/>
-        <dl class="row">
+        <dl class="row gift-details">
             <dt class="col-sm-3">Pour</dt>
             <dd class="col-sm-9">{{ gift.owner_name }}</dd>
             <dt class="col-sm-3">Où</dt>
@@ -22,8 +22,12 @@
                     {% endif %}
                 {% endif %}
             </dd>
-            <dt class="col-sm-3">Lien</dt>
-            <dd class="col-sm-9"><a href="{{ gift.url }}">cliquez ici</a></dd>
+            {% if gift.url %}
+                <dt class="col-sm-3">Lien</dt>
+                <dd class="col-sm-9"><a href="{{ gift.url }}">cliquez ici</a></dd>
+            {% else %}
+                <dt class="col-sm-3" style="visibility: hidden;">Placeholder</dt>
+            {% endif %}
         </dl>
 
         {% if gift.owner != userid and gift.remaining_price > 0 %}

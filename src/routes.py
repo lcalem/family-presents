@@ -51,9 +51,12 @@ def format_gift_data(raw_data):
     TODO: fix image storing, putting the image in mongodb was pretty shitty anyway (store md5 and url + put image on file storage)
     '''
 
+    if int(raw_data["price"][0]) == 0:
+        raise Exception("Les cadeaux gratuits ne sont pas encore gérés ! (mettez un euro symbolique)")
+
     gift_data = {
         "title": raw_data["title"][0],
-        "price": float(raw_data["price"][0].replace("€", "")),
+        "price": int(raw_data["price"][0].replace("€", "")),
         "location": raw_data["location"][0]
     }
 
@@ -70,6 +73,10 @@ def format_gift_data(raw_data):
         with open(path, 'wb') as f:
             r.raw.decode_content = True
             shutil.copyfileobj(r.raw, f) 
+
+        img_size = os.path.getsize(path)
+        if img_size > 15000000:
+            raise Exception("Veuillez entrer l'url d'une image plus légère (limite = 15Mb)")
 
         with open(path, "rb") as f_img:
             encoded_string = base64.b64encode(f_img.read())
@@ -310,13 +317,13 @@ with app.app_context():
             return message_template(session, "danger", "invalid gift_id")
 
         try:
-            if float(data["amount"]) > gift["remaining_price"]:
+            if int(data["amount"]) > gift["remaining_price"]:
                 return message_template(session, "danger", "invalid participation! Amount must be less than the remaining price of the gift")
         except ValueError as e:
             return message_template(session, "danger", "participation must be a valid number")
 
         db.gifts.update_one({"_id": ObjectId(data["gift_id"])}, {
-            "$set": {"remaining_price": gift["remaining_price"] - float(data["amount"])},
+            "$set": {"remaining_price": gift["remaining_price"] - int(data["amount"])},
             "$push": {"participations": {"user": ObjectId(session.get('logged_as')), "amount": data["amount"]}}
         })
 
