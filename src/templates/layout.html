@@ -49,10 +49,10 @@
 
         <ul class="shortcuts">
             <li class="nav-header">raccourcis</li>
-            <li><a href="/giftlist/available">Les cadeaux non offerts</a></li>
-            <li><a href="/giftlist/completed">Les cadeaux déjà offerts</a></li>
-            <li><a href="/giftlist/started">Les cadeaux où il manque une contribution</a></li>
-            <li><a href="/gifted/from/{{ userid }}">Les cadeaux où j'ai participé</a></li>
+            <li><span class="list-badge badge badge-pill badge-primary">{{ counters.fully_available }}</span><a href="/giftlist/available">Les cadeaux non offerts</a></li>
+            <li><span class="list-badge badge badge-pill badge-success">{{ counters.gifted }}</span><a href="/giftlist/completed">Les cadeaux déjà offerts</a></li>
+            <li><span class="list-badge badge badge-pill badge-info">{{ counters.partially_available }}</span><a href="/giftlist/started">Les cadeaux où il manque une contribution</a></li>
+            <li><span class="list-badge badge badge-pill badge-success">{{ counters.user_participated }}</span><a href="/giftlist/participated/{{ userid }}">Les cadeaux où j'ai participé</a></li>
         </ul>
 
     </div>

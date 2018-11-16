@@ -16,6 +16,7 @@ run:
 
 restart_server:
 	docker-compose -f docker/docker-compose.yml restart server
+	docker logs -f docker_server_1
 
 
 .PHONY: docker up_db run restart_server
