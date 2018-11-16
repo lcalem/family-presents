@@ -1,0 +1,6 @@
+FROM tiangolo/uwsgi-nginx-flask:python3.6
+
+ADD docker/requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt && rm requirements.txt
+
+ADD src /app

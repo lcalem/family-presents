@@ -18,159 +18,171 @@ from collections import defaultdict
 from pymongo import MongoClient
 
 # from bson import ObjectId
-from flask import Flask, request, redirect, render_template, flash, session, abort
+from flask import Flask, request, redirect, render_template, flash, session, abort, g
 from werkzeug.datastructures import ImmutableMultiDict
 from werkzeug.wrappers import Response
 
 app = Flask(__name__)
-client = MongoClient('mongo', 27017)
-db = client.data
-
-
-class FormatException(Exception):
-    pass
-
-
-def create_response(error=False, message="", status_code=200, extra_response=None):
-    response = {
-        "error": error,
-        "message": message
-    }
-    if extra_response:
-        response.update(extra_response)
-
-    r = Response(json.dumps(response), mimetype='application/json')
-    r.status_code = status_code
-
-    return r
-
-
-def format_gift_data(raw_data):
-    '''
-    raw gift data {'title': ['truc'], 'price': [''], 'location': [''], 'link': [''], 'image': ['']}
-    TODO: fix image storing, putting the image in mongodb was pretty shitty anyway (store md5 and url + put image on file storage)
-    '''
-
-    if int(raw_data["price"][0]) == 0:
-        raise Exception("Les cadeaux gratuits ne sont pas encore gérés ! (mettez un euro symbolique)")
-
-    gift_data = {
-        "title": raw_data["title"][0],
-        "price": int(raw_data["price"][0].replace("€", "")),
-        "location": raw_data["location"][0]
-    }
-
-    gift_data["remaining_price"] = gift_data["price"]
-
-    # TODO check urls
-    gift_data["url"] = raw_data["link"][0]
-
-    # image
-    r = requests.get(raw_data["image"][0], stream=True)
-    path = "/tmp/gloubi"
-    if r.status_code == 200:
-        # TODO: it is pretty stupid to save the file and then read it again but storing direct requests binary data in mongo is a mess
-        with open(path, 'wb') as f:
-            r.raw.decode_content = True
-            shutil.copyfileobj(r.raw, f) 
-
-        img_size = os.path.getsize(path)
-        if img_size > 15000000:
-            raise Exception("Veuillez entrer l'url d'une image plus légère (limite = 15Mb)")
-
-        with open(path, "rb") as f_img:
-            encoded_string = base64.b64encode(f_img.read())
-
-        gift_data["image"] = encoded_string
-
-    return gift_data
-
-
-def count_remaining_gifts(userid):
-    '''
-    gifts: key: user / value: remaining gifts for this user
-    counters: various gift counters for shortcuts
-    '''
-    gifts = defaultdict(lambda: 0)
-    counters = defaultdict(lambda: 0)
-    for gift in db.gifts.find({}):
-        # we don't give hints about user's gifts!
-        if str(gift["owner"]) == str(userid):
-            continue
-
-        if gift["remaining_price"] > 0:
-            gifts[str(gift["owner"])] += 1
-
-            if gift["remaining_price"] == gift["price"]:
-                counters["fully_available"] += 1
-            else:
-                counters["partially_available"] += 1
-        
-        else:
-            counters["gifted"] += 1
-        
-        if str(userid) in [str(participation["user"]) for participation in gift.get("participations", [])]:  # meh
-            counters["user_participated"] += 1
-
-    return gifts, counters
-
-def get_common_info(sess):
-    info = {
-        "userid": sess.get('logged_as'),
-        "username": sess.get('display_name')
-    }
-
-    people = list()
-    gifts, counters = count_remaining_gifts(sess.get('logged_as'))
-    for user in db.users.find({}):
-        people.append({
-            "name": user["name"],
-            "userid": str(user["_id"]),
-            "remaining_gifts": gifts.get(str(user["_id"]), 0)
-        })
-    info["people"] = people
-    info["counters"] = counters
-
-    return info
-
-
-def message_template(sess, message_type, message):
-    template_data = get_common_info(sess)
-    template_data["message_type"] = message_type
-    template_data["message_content"] = message
-    return render_template('message.html', **template_data)
-
-
-def format_gift(db_gift):
-    '''
-    input: gift object from db
-    output: dict formatted for frontend template
-    '''
-    user = db.users.find_one({"_id": db_gift["owner"]})
-
-    template_gift = {k: v for k, v in db_gift.items() if k in ["title", "price", "location", "url", "remaining_price"]}
-    template_gift['image'] = db_gift['image'].decode()
-    template_gift['owner'] = str(user['_id'])
-    template_gift['owner_name'] = user["name"]
-    template_gift['_id'] = str(db_gift["_id"])
-    return template_gift
-
-
-def render_giftlist(session, gifts):
-    '''
-    renders the giftlist or a generic message if there is no gift to display
-    '''
-
-    if len(gifts):
-        template_data = get_common_info(session)
-        template_data["gifts"] = gifts
-        return render_template('giftlist.html', **template_data)
-
-    else:
-        return message_template(session, "info", "Il n'y a pas de cadeaux à afficher ici !")
+app.secret_key = os.urandom(12)
 
 
 with app.app_context():
+
+    class FormatException(Exception):
+        pass
+
+    
+    def get_db():
+        if not hasattr(g, 'db'):
+            db_name = 'mongo%s' % '_prod' if os.environ.get('ENV') == 'prod' else '' 
+            client = MongoClient(db_name, 27017)
+            db = client.data
+            g.db = db
+        return g.db
+
+
+    def create_response(error=False, message="", status_code=200, extra_response=None):
+        response = {
+            "error": error,
+            "message": message
+        }
+        if extra_response:
+            response.update(extra_response)
+
+        r = Response(json.dumps(response), mimetype='application/json')
+        r.status_code = status_code
+
+        return r
+
+
+    def format_gift_data(raw_data):
+        '''
+        raw gift data {'title': ['truc'], 'price': [''], 'location': [''], 'link': [''], 'image': ['']}
+        TODO: fix image storing, putting the image in mongodb was pretty shitty anyway (store md5 and url + put image on file storage)
+        '''
+
+        if int(raw_data["price"][0]) == 0:
+            raise Exception("Les cadeaux gratuits ne sont pas encore gérés ! (mettez un euro symbolique)")
+
+        gift_data = {
+            "title": raw_data["title"][0],
+            "price": int(raw_data["price"][0].replace("€", "")),
+            "location": raw_data["location"][0]
+        }
+
+        gift_data["remaining_price"] = gift_data["price"]
+
+        # TODO check urls
+        gift_data["url"] = raw_data["link"][0]
+
+        # image
+        r = requests.get(raw_data["image"][0], stream=True)
+        path = "/tmp/gloubi"
+        if r.status_code == 200:
+            # TODO: it is pretty stupid to save the file and then read it again but storing direct requests binary data in mongo is a mess
+            with open(path, 'wb') as f:
+                r.raw.decode_content = True
+                shutil.copyfileobj(r.raw, f) 
+
+            img_size = os.path.getsize(path)
+            if img_size > 15000000:
+                raise Exception("Veuillez entrer l'url d'une image plus légère (limite = 15Mb)")
+
+            with open(path, "rb") as f_img:
+                encoded_string = base64.b64encode(f_img.read())
+
+            gift_data["image"] = encoded_string
+
+        return gift_data
+
+
+    def count_remaining_gifts(userid):
+        '''
+        gifts: key: user / value: remaining gifts for this user
+        counters: various gift counters for shortcuts
+        '''
+        db = get_db()
+
+        gifts = defaultdict(lambda: 0)
+        counters = defaultdict(lambda: 0)
+        for gift in db.gifts.find({}):
+            # we don't give hints about user's gifts!
+            if str(gift["owner"]) == str(userid):
+                continue
+
+            if gift["remaining_price"] > 0:
+                gifts[str(gift["owner"])] += 1
+
+                if gift["remaining_price"] == gift["price"]:
+                    counters["fully_available"] += 1
+                else:
+                    counters["partially_available"] += 1
+            
+            else:
+                counters["gifted"] += 1
+            
+            if str(userid) in [str(participation["user"]) for participation in gift.get("participations", [])]:  # meh
+                counters["user_participated"] += 1
+
+        return gifts, counters
+
+    def get_common_info(sess):
+        info = {
+            "userid": sess.get('logged_as'),
+            "username": sess.get('display_name')
+        }
+
+        db = get_db()
+
+        people = list()
+        gifts, counters = count_remaining_gifts(sess.get('logged_as'))
+        for user in db.users.find({}):
+            people.append({
+                "name": user["name"],
+                "userid": str(user["_id"]),
+                "remaining_gifts": gifts.get(str(user["_id"]), 0)
+            })
+        info["people"] = people
+        info["counters"] = counters
+
+        return info
+
+
+    def message_template(sess, message_type, message):
+        template_data = get_common_info(sess)
+        template_data["message_type"] = message_type
+        template_data["message_content"] = message
+        return render_template('message.html', **template_data)
+
+
+    def format_gift(db_gift):
+        '''
+        input: gift object from db
+        output: dict formatted for frontend template
+        '''
+        user = db.users.find_one({"_id": db_gift["owner"]})
+
+        template_gift = {k: v for k, v in db_gift.items() if k in ["title", "price", "location", "url", "remaining_price"]}
+        template_gift['image'] = db_gift['image'].decode()
+        template_gift['owner'] = str(user['_id'])
+        template_gift['owner_name'] = user["name"]
+        template_gift['_id'] = str(db_gift["_id"])
+        return template_gift
+
+
+    def render_giftlist(session, gifts):
+        '''
+        renders the giftlist or a generic message if there is no gift to display
+        '''
+
+        if len(gifts):
+            template_data = get_common_info(session)
+            template_data["gifts"] = gifts
+            return render_template('giftlist.html', **template_data)
+
+        else:
+            return message_template(session, "info", "Il n'y a pas de cadeaux à afficher ici !")
+
 
     @app.route('/')
     def index():
@@ -205,11 +217,12 @@ with app.app_context():
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
+        db = get_db()
         content = request.form.to_dict(flat=False)
         print("raw gift data %s" % str(content), file=sys.stderr)
 
         try:
-            gift_data = format_gift_data(content)
+            gift_data = format_gift_data(session, content)
             gift_data["owner"] = ObjectId(session.get('logged_as'))
             db.gifts.insert(gift_data)
         except Exception as e:
@@ -223,6 +236,7 @@ with app.app_context():
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
+        db = get_db()
         gifts = list()
         for gift in db.gifts.find({"owner": ObjectId(userid)}):
             template_gift = format_gift(gift)
@@ -253,6 +267,7 @@ with app.app_context():
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
+        db = get_db()
         gifts = list()
         for gift in db.gifts.find({}):
             if str(gift["owner"]) == session.get('logged_as'):
@@ -270,6 +285,7 @@ with app.app_context():
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
+        db = get_db()
         gifts = list()
         for gift in db.gifts.find({}):
             if str(gift["owner"]) == session.get('logged_as'):
@@ -287,6 +303,7 @@ with app.app_context():
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
+        db = get_db()
         gifts = list()
         for gift in db.gifts.find({}):
             if str(gift["owner"]) == session.get('logged_as'):
@@ -307,6 +324,7 @@ with app.app_context():
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
+        db = get_db()
         data = request.form.to_dict(flat=True)
         print("participation data %s" % str(data), file=sys.stderr)
         if "amount" not in data or "gift_id" not in data:
@@ -335,6 +353,8 @@ with app.app_context():
         '''
         TODO: maybe put a real password management here
         '''
+        db = get_db()
+
         user = db.users.find_one({"username": request.form['username']})
         if not user:
             flash('Unknown user %s' % request.form['username'])

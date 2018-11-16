@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 src/run_api.py
+python3 src/main.py

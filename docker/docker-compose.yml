@@ -6,9 +6,8 @@ services:
     networks:
       - overlay
 
-  # docker run -it --name ${PROJECT_NAME}_dev_${USER} ${SHARED} -v ${PROJECT_HOME}/src:/src/ -v ${PROJECT_HOME}:/workspace/ -v /var/run/docker.sock:/var/run/docker.sock:ro -p 5555:5555 ${PROJECT_NAME}_dev
   server:
-    image: data_dev:latest
+    image: gifts_dev:latest
     ports:
       - "5555:5555"
     volumes:
