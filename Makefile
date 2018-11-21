@@ -22,7 +22,6 @@ run:
 
 run_nginx: 
 	docker-compose -f docker/docker-compose-nginx.yml up -d server_prod
-	# docker run -p 5555:80 ${PROJECT_NAME}_nginx
 
 restart_server:
 	docker-compose -f docker/docker-compose.yml restart server

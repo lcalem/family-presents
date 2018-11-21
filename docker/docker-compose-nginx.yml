@@ -11,7 +11,7 @@ services:
   server_prod:
     image: gifts_nginx:latest
     ports:
-      - "5555:80"
+      - "80:80"
     environment:
       - "ENV=prod"
     networks: 
