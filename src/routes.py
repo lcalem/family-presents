@@ -61,37 +61,44 @@ with app.app_context():
         TODO: fix image storing, putting the image in mongodb was pretty shitty anyway (store md5 and url + put image on file storage)
         '''
 
-        if int(raw_data["price"][0]) == 0:
+        price = int(re.sub("[^0-9]", "", raw_data["price"]))
+        if price == 0:
             raise Exception("Les cadeaux gratuits ne sont pas encore gérés ! (mettez un euro symbolique)")
 
         gift_data = {
-            "title": raw_data["title"][0],
-            "price": int(raw_data["price"][0].replace("€", "")),
-            "location": raw_data["location"][0]
+            "title": raw_data["title"],
+            "price": price,
+            "location": raw_data["location"]
         }
 
         gift_data["remaining_price"] = gift_data["price"]
 
         # TODO check urls
-        gift_data["url"] = raw_data["link"][0]
+        gift_data["url"] = raw_data["link"]
 
         # image
-        r = requests.get(raw_data["image"][0], stream=True)
-        path = "/tmp/gloubi"
-        if r.status_code == 200:
-            # TODO: it is pretty stupid to save the file and then read it again but storing direct requests binary data in mongo is a mess
-            with open(path, 'wb') as f:
-                r.raw.decode_content = True
-                shutil.copyfileobj(r.raw, f) 
-
-            img_size = os.path.getsize(path)
-            if img_size > 15000000:
-                raise Exception("Veuillez entrer l'url d'une image plus légère (limite = 15Mb)")
-
-            with open(path, "rb") as f_img:
+        if not raw_data.get("image"):
+            with open("/app/gift.jpg", "rb") as f_img:
                 encoded_string = base64.b64encode(f_img.read())
-
             gift_data["image"] = encoded_string
+
+        else:
+            r = requests.get(raw_data["image"], stream=True)
+            path = "/tmp/gloubi"
+            if r.status_code == 200:
+                # TODO: it is pretty stupid to save the file and then read it again but storing direct requests binary data in mongo is a mess
+                with open(path, 'wb') as f:
+                    r.raw.decode_content = True
+                    shutil.copyfileobj(r.raw, f) 
+
+                img_size = os.path.getsize(path)
+                if img_size > 15000000:
+                    raise Exception("Veuillez entrer l'url d'une image plus légère (limite = 15Mb)")
+
+                with open(path, "rb") as f_img:
+                    encoded_string = base64.b64encode(f_img.read())
+
+                gift_data["image"] = encoded_string
 
         return gift_data
 
@@ -160,6 +167,7 @@ with app.app_context():
         input: gift object from db
         output: dict formatted for frontend template
         '''
+        db = get_db()
         user = db.users.find_one({"_id": db_gift["owner"]})
 
         template_gift = {k: v for k, v in db_gift.items() if k in ["title", "price", "location", "url", "remaining_price"]}
@@ -218,11 +226,11 @@ with app.app_context():
             return redirect("/", code=302)
 
         db = get_db()
-        content = request.form.to_dict(flat=False)
+        content = request.form.to_dict(flat=True)
         print("raw gift data %s" % str(content), file=sys.stderr)
 
         try:
-            gift_data = format_gift_data(session, content)
+            gift_data = format_gift_data(content)
             gift_data["owner"] = ObjectId(session.get('logged_as'))
             db.gifts.insert(gift_data)
         except Exception as e:
