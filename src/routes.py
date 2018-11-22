@@ -258,6 +258,7 @@ with app.app_context():
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
+        db = get_db()
         gifts = list()
         for gift in db.gifts.find({}):
             if str(gift["owner"]) == session.get('logged_as'):
