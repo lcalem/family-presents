@@ -61,7 +61,7 @@ with app.app_context():
         TODO: fix image storing, putting the image in mongodb was pretty shitty anyway (store md5 and url + put image on file storage)
         '''
 
-        price = int(re.sub("[^0-9]", "", raw_data["price"]))
+        price = int(float(re.sub("[^0-9\.,]", "", raw_data["price"])))
         if price == 0:
             raise Exception("Les cadeaux gratuits ne sont pas encore gérés ! (mettez un euro symbolique)")
 
@@ -178,7 +178,7 @@ with app.app_context():
         return template_gift
 
 
-    def render_giftlist(session, gifts):
+    def render_giftlist(session, gifts, title):
         '''
         renders the giftlist or a generic message if there is no gift to display
         '''
@@ -186,6 +186,7 @@ with app.app_context():
         if len(gifts):
             template_data = get_common_info(session)
             template_data["gifts"] = gifts
+            template_data["title"] = title
             return render_template('giftlist.html', **template_data)
 
         else:
@@ -245,12 +246,14 @@ with app.app_context():
             return redirect("/", code=302)
 
         db = get_db()
+        user = db.users.find_one({"_id": ObjectId(userid)})
+
         gifts = list()
         for gift in db.gifts.find({"owner": ObjectId(userid)}):
             template_gift = format_gift(gift)
             gifts.append(template_gift)
 
-        return render_giftlist(session, gifts)
+        return render_giftlist(session, gifts, "Les souhaits de %s" % user["name"])
 
 
     @app.route('/giftlist/available', methods=["GET"])
@@ -268,7 +271,7 @@ with app.app_context():
                 template_gift = format_gift(gift)
                 gifts.append(template_gift)
 
-        return render_giftlist(session, gifts)
+        return render_giftlist(session, gifts, "Les souhaits disponibles")
 
     
     @app.route('/giftlist/completed', methods=["GET"])
@@ -286,7 +289,7 @@ with app.app_context():
                 template_gift = format_gift(gift)
                 gifts.append(template_gift)
 
-        return render_giftlist(session, gifts)
+        return render_giftlist(session, gifts, "Les souhaits déjà offerts")
 
     
     @app.route('/giftlist/started', methods=["GET"])
@@ -304,7 +307,7 @@ with app.app_context():
                 template_gift = format_gift(gift)
                 gifts.append(template_gift)
 
-        return render_giftlist(session, gifts)
+        return render_giftlist(session, gifts, "Les souhaits où il manque une contribution")
 
     
     @app.route('/giftlist/participated/<userid>', methods=["GET"])
@@ -322,7 +325,7 @@ with app.app_context():
                 template_gift = format_gift(gift)
                 gifts.append(template_gift)
 
-        return render_giftlist(session, gifts)
+        return render_giftlist(session, gifts, "Les souhaits auxquels j'ai participé")
 
 
     @app.route('/participate', methods=["POST"])
