@@ -6,8 +6,7 @@ Every registered member of the family can add wishes, and can see wishes from ot
 Everyone can then claim a wish to say "I will buy this" and the wish disappear from the "available" list in order to avoid two people buying the same gift.
 You can also contribute to a gift without buying it entirely, and the system keeps track of the remaining amount missing from this gift, which can be helpful for group gifts.
 
-[[https://github.com/lcalem/family-presents/blob/master/img/interface.png|alt=interface]]
-
+![alt text](https://github.com/lcalem/family-presents/blob/master/img/interface.png)
 
 ## How to install
 
