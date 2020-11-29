@@ -2,6 +2,7 @@
 
 import base64
 import datetime
+import hashlib
 import json
 import os
 import re
@@ -31,10 +32,10 @@ with app.app_context():
     class FormatException(Exception):
         pass
 
-    
+
     def get_db():
         if not hasattr(g, 'db'):
-            db_name = 'mongo%s' % '_prod' if os.environ.get('ENV') == 'prod' else '' 
+            db_name = 'mongo%s' % '_prod' if os.environ.get('ENV') == 'prod' else ''
             client = MongoClient(db_name, 27017)
             db = client.data
             g.db = db
@@ -89,7 +90,7 @@ with app.app_context():
                 # TODO: it is pretty stupid to save the file and then read it again but storing direct requests binary data in mongo is a mess
                 with open(path, 'wb') as f:
                     r.raw.decode_content = True
-                    shutil.copyfileobj(r.raw, f) 
+                    shutil.copyfileobj(r.raw, f)
 
                 img_size = os.path.getsize(path)
                 if img_size > 15000000:
@@ -124,10 +125,10 @@ with app.app_context():
                     counters["fully_available"] += 1
                 else:
                     counters["partially_available"] += 1
-            
+
             else:
                 counters["gifted"] += 1
-            
+
             if str(userid) in [str(participation["user"]) for participation in gift.get("participations", [])]:  # meh
                 counters["user_participated"] += 1
 
@@ -210,7 +211,7 @@ with app.app_context():
             template_data = get_common_info(session)
             return render_template('home.html', **template_data)
 
-    
+
     @app.route('/addgift')
     def addgift():
         if not session.get('logged_in'):
@@ -220,7 +221,7 @@ with app.app_context():
             template_data = get_common_info(session)
             return render_template('addgift.html', **template_data)
 
-    
+
     @app.route('/addgift', methods=['POST'])
     def insertgift():
         if not session.get('logged_in'):
@@ -239,7 +240,7 @@ with app.app_context():
 
         return message_template(session, "success", "Souhait ajouté !")
 
-    
+
     @app.route('/giftlist/user/<userid>', methods=["GET"])
     def listgifts(userid):
         if not session.get('logged_in'):
@@ -266,14 +267,14 @@ with app.app_context():
         for gift in db.gifts.find({}):
             if str(gift["owner"]) == session.get('logged_as'):
                 continue
-            
+
             if gift["remaining_price"] == gift["price"]:
                 template_gift = format_gift(gift)
                 gifts.append(template_gift)
 
         return render_giftlist(session, gifts, "Les souhaits disponibles")
 
-    
+
     @app.route('/giftlist/completed', methods=["GET"])
     def list_completed():
         if not session.get('logged_in'):
@@ -284,14 +285,14 @@ with app.app_context():
         for gift in db.gifts.find({}):
             if str(gift["owner"]) == session.get('logged_as'):
                 continue
-            
+
             if gift["remaining_price"] == 0:
                 template_gift = format_gift(gift)
                 gifts.append(template_gift)
 
         return render_giftlist(session, gifts, "Les souhaits déjà offerts")
 
-    
+
     @app.route('/giftlist/started', methods=["GET"])
     def list_started():
         if not session.get('logged_in'):
@@ -302,14 +303,14 @@ with app.app_context():
         for gift in db.gifts.find({}):
             if str(gift["owner"]) == session.get('logged_as'):
                 continue
-            
+
             if gift["remaining_price"] > 0 and gift["remaining_price"] < gift["price"]:
                 template_gift = format_gift(gift)
                 gifts.append(template_gift)
 
         return render_giftlist(session, gifts, "Les souhaits où il manque une contribution")
 
-    
+
     @app.route('/giftlist/participated/<userid>', methods=["GET"])
     def list_participated(userid):
         if not session.get('logged_in'):
@@ -320,7 +321,7 @@ with app.app_context():
         for gift in db.gifts.find({}):
             if str(gift["owner"]) == session.get('logged_as'):
                 continue
-            
+
             if str(userid) in [str(participation["user"]) for participation in gift.get("participations", [])]:
                 template_gift = format_gift(gift)
                 gifts.append(template_gift)
@@ -341,7 +342,7 @@ with app.app_context():
         print("participation data %s" % str(data), file=sys.stderr)
         if "amount" not in data or "gift_id" not in data:
             return message_template(session, "danger", "participation must contain 'participation' and 'gift_id'!")
-    
+
         gift = db.gifts.find_one({"_id": ObjectId(data["gift_id"])})
         if not gift:
             return message_template(session, "danger", "invalid gift_id")
@@ -363,14 +364,14 @@ with app.app_context():
     @app.route('/login', methods=['POST'])
     def login():
         '''
-        TODO: maybe put a real password management here
+        check md5 hash of password
         '''
         db = get_db()
 
         user = db.users.find_one({"username": request.form['username']})
         if not user:
             flash('Unknown user %s' % request.form['username'])
-        elif request.form['password'] == user['password']:
+        elif hashlib.md5(request.form['password'].encode('utf-8')).hexdigest() == user['password']:
             session['logged_in'] = True
             session['logged_as'] = str(user['_id'])
             session['display_name'] = user['name']
