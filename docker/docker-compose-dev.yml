@@ -1,0 +1,20 @@
+version: '3.3'
+
+services:
+  mongo:
+    image: mongo:3.4
+    networks:
+      - overlay
+
+  server:
+    image: gifts_dev:latest
+    ports:
+      - "5555:5555"
+    volumes:
+      - ${PROJECT_HOME}/src:/src/
+      - ${PROJECT_HOME}:/workspace/
+    networks: 
+      - overlay
+
+networks:
+    overlay:

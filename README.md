@@ -10,11 +10,13 @@ You can also contribute to a gift without buying it entirely, and the system kee
 
 ## How to install
 
+Guide intended for technical people, I don't have a general install yet sorry.
+
 1. Go on your server
 2. Clone the repo `git clone git@github.com:lcalem/family-presents.git`
-3. `cd` in the repo and build the docker using `make build_nginx`
-4. Up the server using `make run_nginx`
-5. Up the DB using `make up_db`
+3. Set the listening port with `export PROJECT_PROD=80` or whatever port you want to use
+4. `cd` in the repo and build the docker using `make build_prod`
+5. Up the server and the DB using `make run_all_prod`
 6. Go in the db container (`docker exec -it docker_mongo_prod_1 mongo`) and set the active db to "data" (mongo> `use data`)
 7. Insert users of your system `db.users.insert({"name": "<DISPLAY_NAME>", "username": "<USERNAME>", "password": "<PASSWORD>"})`
 

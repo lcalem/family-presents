@@ -1,0 +1,21 @@
+version: '3.3'
+
+services:
+  mongo_prod:
+    image: mongo:3.4
+    ports:
+      - "27017:27017"
+    networks:
+      - overlay
+
+  server_prod:
+    image: gifts_prod:latest
+    ports:
+      - "${PROJECT_PORT}:80"
+    environment:
+      - "ENV=prod"
+    networks:
+      - overlay
+
+networks:
+    overlay:
