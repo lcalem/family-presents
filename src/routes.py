@@ -35,7 +35,7 @@ with app.app_context():
 
     def get_db():
         if not hasattr(g, 'db'):
-            db_name = 'mongo%s' % '_prod' if os.environ.get('ENV') == 'prod' else ''
+            db_name = 'mongo%s' % ('_prod' if os.environ.get('ENV') == 'prod' else '')
             client = MongoClient(db_name, 27017)
             db = client.data
             g.db = db
@@ -135,6 +135,11 @@ with app.app_context():
         return gifts, counters
 
     def get_common_info(sess):
+        '''
+        Gets general display info such as:
+        - every people you can see (filtered by family visibility)
+        - their gift counters
+        '''
         info = {
             "userid": sess.get('logged_as'),
             "username": sess.get('display_name')
@@ -142,9 +147,12 @@ with app.app_context():
 
         db = get_db()
 
+        user = db.users.find_one({'_id': ObjectId(sess.get('logged_as'))})
+        user_families = user['families']
+
         people = list()
         gifts, counters = count_remaining_gifts(sess.get('logged_as'))
-        for user in db.users.find({}):
+        for user in db.users.find({"families": {"$in": user_families}}):
             people.append({
                 "name": user["name"],
                 "userid": str(user["_id"]),
