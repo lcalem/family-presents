@@ -111,9 +111,12 @@ with app.app_context():
         '''
         db = get_db()
 
+        user = db.users.find_one({'_id': ObjectId(userid)})
+        user_families = user['families']
+
         gifts = defaultdict(lambda: 0)
         counters = defaultdict(lambda: 0)
-        for gift in db.gifts.find({}):
+        for gift in db.gifts.find({"owner_families": {"$in": user_families}}):
             # we don't give hints about user's gifts!
             if str(gift["owner"]) == str(userid):
                 continue
@@ -179,7 +182,7 @@ with app.app_context():
         db = get_db()
         user = db.users.find_one({"_id": db_gift["owner"]})
 
-        template_gift = {k: v for k, v in db_gift.items() if k in ["title", "price", "location", "url", "remaining_price"]}
+        template_gift = {k: v for k, v in db_gift.items() if k in ["title", "price", "location", "url", "remaining_price", "participations"]}
         template_gift['image'] = db_gift['image'].decode()
         template_gift['owner'] = str(user['_id'])
         template_gift['owner_name'] = user["name"]
@@ -232,16 +235,22 @@ with app.app_context():
 
     @app.route('/addgift', methods=['POST'])
     def insertgift():
+
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
         db = get_db()
         content = request.form.to_dict(flat=True)
-        print("raw gift data %s" % str(content), file=sys.stderr)
+        # print("raw gift data %s" % str(content), file=sys.stderr)
+
+        # we copy family for each gift for easier counting / filtering
+        user = db.users.find_one({'_id': ObjectId(session.get('logged_as'))})
+        user_families = user['families']
 
         try:
             gift_data = format_gift_data(content)
             gift_data["owner"] = ObjectId(session.get('logged_as'))
+            gift_data["owner_families"] = user_families
             db.gifts.insert(gift_data)
         except Exception as e:
             return message_template(session, "danger", "Il y a eu une erreur dans le format de vos données, veuillez réessayer. \n %s" % str(e))
@@ -251,6 +260,9 @@ with app.app_context():
 
     @app.route('/giftlist/user/<userid>', methods=["GET"])
     def listgifts(userid):
+        '''
+        Lists gifts for a perticular user
+        '''
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
@@ -267,12 +279,20 @@ with app.app_context():
 
     @app.route('/giftlist/available', methods=["GET"])
     def list_available():
+        '''
+        Lists all available gifts
+        (filtered by family visibility)
+        '''
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
         db = get_db()
+
+        user = db.users.find_one({'_id': ObjectId(session.get('logged_as'))})
+        user_families = user['families']
+
         gifts = list()
-        for gift in db.gifts.find({}):
+        for gift in db.gifts.find({"owner_families": {"$in": user_families}}):
             if str(gift["owner"]) == session.get('logged_as'):
                 continue
 
@@ -289,8 +309,12 @@ with app.app_context():
             return redirect("/", code=302)
 
         db = get_db()
+
+        user = db.users.find_one({'_id': ObjectId(session.get('logged_as'))})
+        user_families = user['families']
+
         gifts = list()
-        for gift in db.gifts.find({}):
+        for gift in db.gifts.find({"owner_families": {"$in": user_families}}):
             if str(gift["owner"]) == session.get('logged_as'):
                 continue
 
@@ -303,12 +327,19 @@ with app.app_context():
 
     @app.route('/giftlist/started', methods=["GET"])
     def list_started():
+        '''
+        Route for listing gifts that are partly gifted
+        '''
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
         db = get_db()
+
+        user = db.users.find_one({'_id': ObjectId(session.get('logged_as'))})
+        user_families = user['families']
+
         gifts = list()
-        for gift in db.gifts.find({}):
+        for gift in db.gifts.find({"owner_families": {"$in": user_families}}):
             if str(gift["owner"]) == session.get('logged_as'):
                 continue
 
@@ -321,12 +352,19 @@ with app.app_context():
 
     @app.route('/giftlist/participated/<userid>', methods=["GET"])
     def list_participated(userid):
+        '''
+        Route for gifts where the user has contributed
+        '''
         if not session.get('logged_in'):
             return redirect("/", code=302)
 
         db = get_db()
+
+        user = db.users.find_one({'_id': ObjectId(session.get('logged_as'))})
+        user_families = user['families']
+
         gifts = list()
-        for gift in db.gifts.find({}):
+        for gift in db.gifts.find({"owner_families": {"$in": user_families}}):
             if str(gift["owner"]) == session.get('logged_as'):
                 continue
 
