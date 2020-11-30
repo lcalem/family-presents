@@ -26,7 +26,7 @@ run_prod:
 run_all_prod: up_db_dev run_prod
 
 restart_server:
-	docker-compose -f docker/docker-compose.yml restart server
+	docker-compose -f docker/docker-compose-dev.yml restart server
 	docker logs -f docker_server_1
 
 
