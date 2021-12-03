@@ -14,7 +14,7 @@ Guide intended for technical people, I don't have a general install yet sorry.
 
 1. Go on your server
 2. Clone the repo `git clone git@github.com:lcalem/family-presents.git`
-3. Set the listening port with `export PROJECT_PROD=80` or whatever port you want to use
+3. Set the listening ports with `export PROJECT_PORT=80` and `export PROJECT_HTTPS_PORT=443` or whatever port you want to use
 4. `cd` in the repo and build the docker using `make build_prod`
 5. Up the server and the DB using `make run_all_prod`
 6. Go in the db container (`docker exec -it docker_mongo_prod_1 mongo`) and set the active db to "data" (mongo> `use data`)
