@@ -23,11 +23,15 @@ run_dev:
 run_prod:
 	docker-compose -f docker/docker-compose-prod.yml up -d server_prod
 
-run_all_prod: up_db_dev run_prod
+run_all_prod: up_db_prod run_prod
 
 restart_server:
 	docker-compose -f docker/docker-compose-dev.yml restart server
 	docker logs -f docker_server_1
+
+restart_prod_server:
+	docker-compose -f docker/docker-compose-prod.yml restart server_prod
+	docker logs -f docker_server_prod_1
 
 
 .PHONY: build_dev build_prod up_db_dev up_db_prod run_dev run_prod run_all_prod restart_server
