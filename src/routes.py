@@ -86,6 +86,10 @@ with app.app_context():
                 encoded_string = base64.b64encode(f_img.read())
             gift_data["image"] = encoded_string
 
+        elif raw_data['image'].startswith('data:image/') and ';base64,' in raw_data['image']:
+            # data:image/jpeg;base64 style images in URL
+            gift_data["image"] = raw_data['image'].split(';base64,')[1]
+
         else:
             r = requests.get(raw_data["image"], stream=True)
             path = "/tmp/gloubi"
