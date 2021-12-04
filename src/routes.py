@@ -208,7 +208,7 @@ with app.app_context():
         # if price is int then drop the decimal part
         price = db_gift['price']
         if int(price) == price:
-            template_gift['price'] = int(price)
+            template_gift['price'] = '~ ' + str(int(price))
 
         return template_gift
 
