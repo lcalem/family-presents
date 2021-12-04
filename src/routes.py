@@ -58,12 +58,13 @@ with app.app_context():
 
     def format_gift_data(raw_data):
         '''
+        formatting user input
         raw gift data {'title': ['truc'], 'price': [''], 'location': [''], 'link': [''], 'image': ['']}
         TODO: fix image storing, putting the image in mongodb was pretty shitty anyway (store md5 and url + put image on file storage)
         '''
 
         m = re.match(r"^[0-9]*([,|.]{0,1}[0-9]+)", raw_data["price"])
-        price = float(m.group(0))
+        price = float(m.group(0).replace(',', '.'))
 
         if price == 0:
             raise Exception("Les cadeaux gratuits ne sont pas encore gérés ! (mettez un euro symbolique)")
@@ -143,6 +144,7 @@ with app.app_context():
 
         return gifts, counters
 
+
     def get_common_info(sess):
         '''
         Gets general display info such as:
@@ -202,6 +204,11 @@ with app.app_context():
             with open("/app/gift.jpg", "rb") as f_img:
                 encoded_string = base64.b64encode(f_img.read())
             template_gift['image'] = encoded_string.decode()   # yes we have to do that so it's the same format but everything is going to be moved to the FS soon anyways
+
+        # if price is int then drop the decimal part
+        price = db_gift['price']
+        if int(price) == price:
+            template_gift['price'] = int(price)
 
         return template_gift
 
