@@ -102,6 +102,10 @@ with app.app_context():
                     encoded_string = base64.b64encode(f_img.read())
 
                 gift_data["image"] = encoded_string
+            else:
+                with open("/app/gift.jpg", "rb") as f_img:
+                    encoded_string = base64.b64encode(f_img.read())
+                gift_data["image"] = encoded_string
 
         return gift_data
 
@@ -185,10 +189,20 @@ with app.app_context():
         user = db.users.find_one({"_id": db_gift["owner"]})
 
         template_gift = {k: v for k, v in db_gift.items() if k in ["title", "price", "location", "url", "remaining_price", "participations"]}
-        template_gift['image'] = db_gift['image'].decode()
+
         template_gift['owner'] = str(user['_id'])
         template_gift['owner_name'] = user["name"]
         template_gift['_id'] = str(db_gift["_id"])
+
+        # load generic image if we don't have that somehow
+        if 'image' in db_gift:
+            template_gift['image'] = db_gift['image'].decode()
+        else:
+            # temporary fix
+            with open("/app/gift.jpg", "rb") as f_img:
+                encoded_string = base64.b64encode(f_img.read())
+            template_gift['image'] = encoded_string.decode()   # yes we have to do that so it's the same format but everything is going to be moved to the FS soon anyways
+
         return template_gift
 
 
