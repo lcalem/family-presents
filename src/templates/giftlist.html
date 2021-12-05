@@ -14,16 +14,22 @@
             <dd class="col-sm-9">{{ gift.owner_name }}</dd>
             <dt class="col-sm-3">Où</dt>
             <dd class="col-sm-9">{{ gift.location }}</dd>
-            <dt class="col-sm-3">Prix</dt>
-            <dd class="col-sm-9">{{ gift.price }} €
-                {% if gift.owner != userid %}
-                    {% if gift.remaining_price == 0 %}
-                        <span class="gifted-badge badge badge-pill badge-success">Offert !</span>
-                    {% else %}
-                        (reste {{ gift.remaining_price }})
+
+            {% if gift.price %}
+                <dt class="col-sm-3">Prix</dt>
+                <dd class="col-sm-9">{{ gift.price }} €
+                    {% if gift.owner != userid %}
+                        {% if gift.remaining_price == 0 %}
+                            <span class="gifted-badge badge badge-pill badge-success">Offert !</span>
+                        {% else %}
+                            (reste {{ gift.remaining_price }})
+                        {% endif %}
                     {% endif %}
-                {% endif %}
-            </dd>
+                </dd>
+            {% else %}
+                <dt class="col-sm-3" style="visibility: hidden;">Placeholder</dt>
+            {% endif %}
+
             {% if gift.url %}
                 <dt class="col-sm-3">Lien</dt>
                 <dd class="col-sm-9"><a href="{{ gift.url }}">cliquez ici</a></dd>

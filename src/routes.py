@@ -201,10 +201,11 @@ with app.app_context():
             encoded_string = base64.b64encode(f_img.read())
             template_gift['image'] = encoded_string.decode()  # TODO check if we can use the .read() directly?
 
-        # if price is int then drop the decimal part
-        price = db_gift['price']
-        if int(price) == price:
-            template_gift['price'] = '~ ' + str(int(price))
+        if 'price' in db_gift:
+            price = db_gift['price']
+            # if price is int then drop the decimal part
+            if int(price) == price:
+                template_gift['price'] = '~ ' + str(int(price))
 
         return template_gift
 
@@ -275,6 +276,33 @@ with app.app_context():
             return message_template(session, "danger", "Il y a eu une erreur dans le format de vos données, veuillez réessayer. \n %s" % str(e))
 
         return message_template(session, "success", "Souhait ajouté !")
+
+
+    @app.route('/addsurprise')
+    def addsurprise():
+        if not session.get('logged_in'):
+            return redirect("/", code=302)
+
+        db = get_db()
+
+        # we copy family for each gift for easier counting / filtering
+        user = db.users.find_one({'_id': ObjectId(session.get('logged_as'))})
+        user_families = user['families']
+
+        try:
+            gift_data = {
+                'title': 'Faites-moi une surprise!',
+                'location': 'Votre imagination',
+                'image': 'surprise',
+                'owner': ObjectId(session.get('logged_as')),
+                'owner_families': user_families
+            }
+
+            db.gifts.insert(gift_data)
+        except Exception as e:
+            return message_template(session, "danger", "Il y a eu une erreur dans le format de vos données, veuillez réessayer. \n %s" % str(e))
+
+        return message_template(session, "success", "Surprise ajoutée !")
 
 
     @app.route('/giftlist/user/<userid>', methods=["GET"])
