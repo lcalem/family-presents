@@ -82,35 +82,30 @@ with app.app_context():
 
         # image
         if not raw_data.get("image"):
-            with open("/app/gift.jpg", "rb") as f_img:
-                encoded_string = base64.b64encode(f_img.read())
-            gift_data["image"] = encoded_string
+            gift_data["image"] = 'gift'
 
         elif raw_data['image'].startswith('data:image/') and ';base64,' in raw_data['image']:
             # data:image/jpeg;base64 style images in URL
-            gift_data["image"] = raw_data['image'].split(';base64,')[1]
+            b64code = raw_data['image'].split(';base64,')[1]
+            imagename = hashlib.md5(b64code.encode('utf-8')).hexdigest()
+            imagepath = os.path.join('/app/images', imagename + '.png')
+            with open(imagepath, "wb") as fh:
+                fh.write(base64.b64decode(b64code))
+            gift_data["image"] = imagename
 
         else:
+            imagename = hashlib.md5(raw_data["image"].encode('utf-8')).hexdigest()
+            imagepath = os.path.join('/app/images', imagename + '.png')
+
             r = requests.get(raw_data["image"], stream=True)
-            path = "/tmp/gloubi"
             if r.status_code == 200:
-                # TODO: it is pretty stupid to save the file and then read it again but storing direct requests binary data in mongo is a mess
-                with open(path, 'wb') as f:
+                with open(imagepath, 'wb') as f:
                     r.raw.decode_content = True
                     shutil.copyfileobj(r.raw, f)
 
-                img_size = os.path.getsize(path)
-                if img_size > 15000000:
-                    raise Exception("Veuillez entrer l'url d'une image plus légère (limite = 15Mb)")
-
-                with open(path, "rb") as f_img:
-                    encoded_string = base64.b64encode(f_img.read())
-
-                gift_data["image"] = encoded_string
+                gift_data["image"] = imagename
             else:
-                with open("/app/gift.jpg", "rb") as f_img:
-                    encoded_string = base64.b64encode(f_img.read())
-                gift_data["image"] = encoded_string
+                gift_data["image"] = 'gift'
 
         return gift_data
 
@@ -200,14 +195,11 @@ with app.app_context():
         template_gift['owner_name'] = user["name"]
         template_gift['_id'] = str(db_gift["_id"])
 
-        # load generic image if we don't have that somehow
-        if 'image' in db_gift:
-            template_gift['image'] = db_gift['image'].decode()
-        else:
-            # temporary fix
-            with open("/app/gift.jpg", "rb") as f_img:
-                encoded_string = base64.b64encode(f_img.read())
-            template_gift['image'] = encoded_string.decode()   # yes we have to do that so it's the same format but everything is going to be moved to the FS soon anyways
+        # image
+        imagepath = os.path.join('/app/images', db_gift['image']) + '.png'
+        with open(imagepath, "rb") as f_img:
+            encoded_string = base64.b64encode(f_img.read())
+            template_gift['image'] = encoded_string.decode()  # TODO check if we can use the .read() directly?
 
         # if price is int then drop the decimal part
         price = db_gift['price']
