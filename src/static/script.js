@@ -22,6 +22,19 @@ function popError(message) {
     alert.style.display = 'block';
 }
 
+function popDeleteGift(gift_id, gift_name) {
+    console.log("hello");
+    var alert = document.getElementById('message');
+    var alertMessage = document.getElementById('actual-message');
+    alertMessage.innerHTML = 'Êtes-vous sûr.e de vouloir supprimer le souhait "' + gift_name + '" ?';
+
+    var deleteLink = document.getElementById('delete-msg-yes');
+    deleteLink.href = '/deletegift/' + gift_id;
+
+    alert.style.display = 'block';
+
+}
+
 function hideError() {
     var alert = document.getElementById('message');
     alert.style.display = 'none';
@@ -41,6 +54,43 @@ function checkNumber(evt, gift_remaining_price) {
         return false;
     return true;
 }
+
+var span = document.querySelectorAll('.contrib-highlight');
+for (var i = span.length; i--;) {
+    (function () {
+        var t;
+        span[i].onmouseover = function () {
+            hideAll();
+            clearTimeout(t);
+            this.className = 'contrib-highlight-on';
+        };
+        span[i].onmouseout = function () {
+            var self = this;
+            t = setTimeout(function () {
+                self.className = 'contrib-highlight';
+            }, 300);
+        };
+    })();
+}
+
+function highlightOn() {
+    hideAll();
+    clearTimeout(t);
+    this.className = 'contrib-highlight-on';
+};
+
+function highlightoff() {
+    var self = this;
+    t = setTimeout(function () {
+        self.className = 'contrib-highlight';
+    }, 300);
+};
+
+function hideAll() {
+    for (var i = span.length; i--;) {
+        span[i].className = 'contrib-highlight';
+    }
+};
 
 // function gift(div_id, gift_id, gift_price) {
 //     hideError();

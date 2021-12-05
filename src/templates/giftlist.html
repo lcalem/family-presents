@@ -5,6 +5,10 @@
 
 {% for gift in gifts %}
     <div class="gift-box">
+        {% if gift.owner == userid %}
+            <span onclick="popDeleteGift('{{gift._id}}', '{{gift.title}}');"><i class="fas fa-times delete-cross"></i></span>
+        {% endif %}
+
         <div class="gift-img-wrap">
             <span class="img-helper"></span><img class="gift-img" src="data:image/png;base64,{{ gift.image }}" />
         </div>
@@ -38,7 +42,7 @@
             {% endif %}
         </dl>
 
-        {% if gift.owner != userid and gift.remaining_price > 0 %}
+        {% if gift.owner != userid and gift.price and gift.remaining_price > 0 %}
             <button type="button" class="btn btn-primary btn-participate" id="btn-participate-{{ loop.index }}" onclick="participate({{ loop.index }});">Participer</button>
 
             <form class="form-gift" method="POST" action="/participate">

@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="message alert alert-danger">
+        <h1>Message</h1>
+        <p>Attention, des contributions ont déjà été faites à ce souhait, voulez-vous vraiment le supprimer ?</p>
+        <a href="/forcedelete/{{ giftid }}" class="btn btn-xs btn-danger pull-right">Je l'ai eu !</a>
+        <a href="/giftlist/user/{{ userid }}" class="btn btn-xs btn-danger pull-right">Annuler</a>
+    </div>
+{% endblock %}

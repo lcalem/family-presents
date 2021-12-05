@@ -13,7 +13,8 @@ RUN pip3 install -r requirements.txt && rm requirements.txt
 
 ADD src /src
 RUN mkdir -p /app/images
-ADD img/gift.jpg /app/images/gift.jpg
+ADD img/gift.png /app/images/gift.png
+ADD img/surprise.png /app/images/surprise.png
 
 ADD docker/docker-entrypoint.sh .
 RUN chmod +x docker-entrypoint.sh

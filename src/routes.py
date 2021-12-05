@@ -127,6 +127,9 @@ with app.app_context():
             if str(gift["owner"]) == str(userid):
                 continue
 
+            if 'price' not in gift:
+                continue
+
             if gift["remaining_price"] > 0:
                 gifts[str(gift["owner"])] += 1
 
@@ -179,6 +182,12 @@ with app.app_context():
         template_data["message_type"] = message_type
         template_data["message_content"] = message
         return render_template('message.html', **template_data)
+
+
+    def delete_message_template(sess, gift_id):
+        template_data = get_common_info(sess)
+        template_data["giftid"] = gift_id
+        return render_template('message_delete.html', **template_data)
 
 
     def format_gift(db_gift):
@@ -452,6 +461,52 @@ with app.app_context():
         })
 
         return message_template(session, "success", "Votre participation a bien été enregistrée !")
+
+
+    @app.route('/deletegift/<giftid>', methods=["GET"])
+    def deletegift(giftid):
+        '''
+        Delete a particular gift: cannot delete if someone already made a contribution
+        '''
+        if not session.get('logged_in'):
+            return redirect("/", code=302)
+
+        db = get_db()
+
+        gift = db.gifts.find_one({"_id": ObjectId(giftid)})
+        if not gift:
+            return message_template(session, "danger", "Le cadeau n'existe pas !")
+
+        elif str(gift['owner']) != session['logged_as']:
+            return message_template(session, "danger", "Vous ne pouvez pas supprimer un cadeau qui n'est pas à vous !")
+
+        elif 'price' in gift and gift["remaining_price"] != gift["price"]:
+            return delete_message_template(session, giftid)
+        else:
+            db.gifts.delete_one({"_id": ObjectId(giftid)})
+            return message_template(session, "success", "Cadeau supprimé")
+
+
+    @app.route('/forcedelete/<giftid>', methods=["GET"])
+    def forcedeletegift(giftid):
+        '''
+        Force delete a particular gift: for when we got the gift
+        '''
+        if not session.get('logged_in'):
+            return redirect("/", code=302)
+
+        db = get_db()
+
+        gift = db.gifts.find_one({"_id": ObjectId(giftid)})
+        if not gift:
+            return message_template(session, "danger", "Le cadeau n'existe pas !")
+
+        elif str(gift['owner']) != session['logged_as']:
+            return message_template(session, "danger", "Vous ne pouvez pas supprimer un cadeau qui n'est pas à vous !")
+
+        else:
+            db.gifts.delete_one({"_id": ObjectId(giftid)})
+            return message_template(session, "success", "Cadeau supprimé")
 
 
     @app.route('/login', methods=['POST'])

@@ -2,6 +2,7 @@ FROM tiangolo/uwsgi-nginx-flask:python3.6
 
 ADD src /app
 RUN mkdir -p /app/images
-ADD img/gift.jpg /app/images/gift.jpg
+ADD img/gift.png /app/images/gift.png
+ADD img/surprise.png /app/images/surprise.png
 ADD docker/requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt && rm requirements.txt
