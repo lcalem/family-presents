@@ -7,6 +7,10 @@
     <div class="gift-box">
         {% if gift.owner == userid %}
             <span onclick="popDeleteGift('{{gift._id}}', '{{gift.title}}');"><i class="fas fa-times delete-cross"></i></span>
+
+            {% if gift.price %}
+                <a href="/updategift/{{gift._id}}"><i class="far fa-edit edit-gift"></i></a>
+            {% endif %}
         {% endif %}
 
         <div class="gift-img-wrap">

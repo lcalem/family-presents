@@ -55,6 +55,33 @@ with app.app_context():
 
         return r
 
+    def format_update_data(raw_data):
+        update_data = {}
+
+        if raw_data.get('price'):
+            m = re.match(r"^[0-9]*([,|.]{0,1}[0-9]+)", raw_data["price"])
+            price = float(m.group(0).replace(',', '.'))
+
+            if price == 0:
+                raise Exception("Les cadeaux gratuits ne sont toujours pas gérés ! (mettez un euro symbolique)")
+
+            update_data['price'] = price
+            update_data['remaining_price'] = price
+
+        if raw_data['title']:
+            update_data['title'] = raw_data['title']
+
+        if raw_data['location']:
+            update_data['location'] = raw_data['location']
+
+        if raw_data['link']:
+            update_data["url"] = raw_data["link"]
+
+        if raw_data['image']:
+            update_data["image"] = format_image_data(raw_data['image'])
+
+        return update_data
+
 
     def format_gift_data(raw_data):
         '''
@@ -81,33 +108,37 @@ with app.app_context():
         gift_data["url"] = raw_data["link"]
 
         # image
-        if not raw_data.get("image"):
-            gift_data["image"] = 'gift'
+        gift_data["image"] = format_image_data(raw_data.get('image'))
 
-        elif raw_data['image'].startswith('data:image/') and ';base64,' in raw_data['image']:
+        return gift_data
+
+
+    def format_image_data(image_field):
+        if not image_field:
+            return 'gift'
+
+        elif image_field.startswith('data:image/') and ';base64,' in image_field:
             # data:image/jpeg;base64 style images in URL
-            b64code = raw_data['image'].split(';base64,')[1]
+            b64code = image_field.split(';base64,')[1]
             imagename = hashlib.md5(b64code.encode('utf-8')).hexdigest()
             imagepath = os.path.join('/app/images', imagename + '.png')
             with open(imagepath, "wb") as fh:
                 fh.write(base64.b64decode(b64code))
-            gift_data["image"] = imagename
+            return imagename
 
         else:
-            imagename = hashlib.md5(raw_data["image"].encode('utf-8')).hexdigest()
+            imagename = hashlib.md5(image_field.encode('utf-8')).hexdigest()
             imagepath = os.path.join('/app/images', imagename + '.png')
 
-            r = requests.get(raw_data["image"], stream=True)
+            r = requests.get(image_field, stream=True)
             if r.status_code == 200:
                 with open(imagepath, 'wb') as f:
                     r.raw.decode_content = True
                     shutil.copyfileobj(r.raw, f)
 
-                gift_data["image"] = imagename
+                return imagename
             else:
-                gift_data["image"] = 'gift'
-
-        return gift_data
+                return 'gift'
 
 
     def count_remaining_gifts(userid):
@@ -507,6 +538,56 @@ with app.app_context():
         else:
             db.gifts.delete_one({"_id": ObjectId(giftid)})
             return message_template(session, "success", "Cadeau supprimé")
+
+
+    @app.route('/updategift/<giftid>', methods=["GET"])
+    def updategiftform(giftid):
+        if not session.get('logged_in'):
+            return redirect("/", code=302)
+
+        db = get_db()
+
+        gift = db.gifts.find_one({"_id": ObjectId(giftid)})
+        if not gift:
+            return message_template(session, "danger", "Le cadeau n'existe pas !")
+
+        elif str(gift['owner']) != session['logged_as']:
+            return message_template(session, "danger", "Vous ne pouvez pas supprimer un cadeau qui n'est pas à vous !")
+
+        else:
+            template_data = get_common_info(session)
+            template_data['gift'] = gift
+            template_data['disabled'] = 'disabled' if gift['price'] != gift['remaining_price'] else ''
+
+            return render_template('updategift.html', **template_data)
+
+
+    @app.route('/updategift/<giftid>', methods=["POST"])
+    def updategift(giftid):
+        if not session.get('logged_in'):
+            return redirect("/", code=302)
+
+        db = get_db()
+
+        gift = db.gifts.find_one({"_id": ObjectId(giftid)})
+        if not gift:
+            return message_template(session, "danger", "Le cadeau n'existe pas !")
+
+        elif str(gift['owner']) != session['logged_as']:
+            return message_template(session, "danger", "Vous ne pouvez pas supprimer un cadeau qui n'est pas à vous !")
+
+        else:
+            content = request.form.to_dict(flat=True)
+            print("raw gift data %s" % str(content), file=sys.stderr)
+
+            try:
+                update_data = format_update_data(content)
+
+                db.gifts.update_one({"_id": ObjectId(giftid)}, {"$set": update_data})
+            except Exception as e:
+                return message_template(session, "danger", f"Erreur lors de la mise à jour {str(e)}")
+
+            return message_template(session, "success", "Cadeau mis à jour")
 
 
     @app.route('/login', methods=['POST'])

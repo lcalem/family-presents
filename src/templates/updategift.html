@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="addgift">
+        <h1>Mettre à jour un souhait</h1>
+
+        <form class="form-gift" method="POST" action="/updategift/{{gift._id}}">
+            <div class="form-group row">
+                <label for="inputTitle" class="col-sm-2 col-form-label">Titre</label>
+                <div class="col-sm-10">
+                    <input name="title" type="text" class="form-control" maxlength="50" id="inputTitle" placeholder="{{gift.title}}">
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="inputPrice" class="col-sm-2 col-form-label">Prix</label>
+                <div class="col-sm-10">
+                    <input name="price" type="text" class="form-control" id="inputPrice" placeholder="{{gift.price}}" {{disabled}}>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="inputLocation" class="col-sm-2 col-form-label">Point de vente</label>
+                <div class="col-sm-10">
+                    <input name="location" type="text" class="form-control" maxlength="20" id="inputLocation" placeholder="{{gift.location}}">
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="inputLink" class="col-sm-2 col-form-label">Lien</label>
+                <div class="col-sm-10">
+                    <input type="text" name="link" class="form-control" id="inputLink" placeholder="gift.">
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="imageLink" class="col-sm-2 col-form-label">Image</label>
+                <div class="col-sm-10">
+                    <input type="text" name="image" class="form-control" id="imageLink" placeholder="Lien de l'image">
+                </div>
+                <!-- <span>OU</span>
+                <div class="col-sm-4">
+                    <div class="input-group">
+                        <span class="input-group-btn">
+                            <span class="btn btn-default btn-file">
+                                Browse… <input type="file" id="imgInp">
+                            </span>
+                        </span>
+                        <input type="text" class="form-control" readonly>
+                    </div> -->
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="form-group row">
+                <div class="col-sm-10">
+                    <button type="submit" class="btn btn-primary addgift-btn">Mettre à jour</button>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+
+{% endblock %}
