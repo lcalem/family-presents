@@ -245,7 +245,7 @@ a:hover, a:visited, a:link, a:active {
 }
 
 .btn-participate, .btn-gift {
-    float: right;
+    float: left;
 }
 
 .div-gift {
@@ -285,27 +285,59 @@ a:hover, a:visited, a:link, a:active {
     list-style-type: disc;
 }
 
+/************** tooltips */
+/* Tooltip container */
+.tooltipi {
+  position: relative;
+  display: inline-block;
+  color: #555;
+}
 
-/************* popups  */
+.tooltipi .tooltiptexti {
+  visibility: hidden;
+  width: 200px;
+  background-color: #555;
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #eee;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  top: -5px;
+  left: 130%;
+}
 
-.contrib-highlight {
-    position: relative;
+.tooltipi .tooltiptexti::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent #555 transparent transparent;
 }
-.contrib-highlight div {
-    display: none;
+.tooltipi:hover .tooltiptexti {
+  visibility: visible;
 }
-.contrib-highlight-on {
-    position:relative;
+
+.tooltipi dl {
+  width: 100%;
+  overflow: hidden;
+  padding: 0;
+  margin: 0
 }
-.contrib-highlight-on div {
-    display:block;
-    position:absolute;
-    width: 15em;
-    top:1.3em;
-    *top:20px;
-    left:70px;
-    z-index:1000;
-    background-color: #DDD;
-    padding: 5px;
-    border-radius: 4px;
+.tooltipi dt {
+  float: left;
+  text-align: left;
+  width: 70%;
+  padding: 0;
+  margin: 0 0 0 10px;
+}
+.tooltipi dd {
+  float: left;
+  width: 25%;
+  padding: 0;
+  margin: 0
 }

@@ -30,7 +30,22 @@
                         {% if gift.remaining_price == 0 %}
                             <span class="gifted-badge badge badge-pill badge-success">Offert !</span>
                         {% else %}
-                            (reste {{ gift.remaining_price }})
+                            {% if gift.remaining_price == (gift.remaining_price | int) %}
+                                (reste {{ gift.remaining_price | int }})
+                            {% else %}
+                                (reste {{ gift.remaining_price }})
+                            {% endif %}
+                        {% endif %}
+
+                        {% if gift.participations %}
+                            <i class="fas fa-info-circle tooltipi">
+                                <dl class="tooltiptexti">
+                                    {% for part in gift.participations %}
+                                        <dt>{{ part.name }}</dt>
+                                        <dd>{{part.amount}} €</dd>
+                                    {% endfor %}
+                                </dl>
+                            </i>
                         {% endif %}
                     {% endif %}
                 </dd>

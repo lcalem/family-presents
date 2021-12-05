@@ -380,7 +380,7 @@ with app.app_context():
 
         gifts = list()
         for gift in db.gifts.find({"owner_families": {"$in": user_families}}):
-            if str(gift["owner"]) == session.get('logged_as'):
+            if str(gift["owner"]) == session.get('logged_as') or ('price' not in gift):
                 continue
 
             if gift["remaining_price"] == gift["price"]:
@@ -402,7 +402,7 @@ with app.app_context():
 
         gifts = list()
         for gift in db.gifts.find({"owner_families": {"$in": user_families}}):
-            if str(gift["owner"]) == session.get('logged_as'):
+            if str(gift["owner"]) == session.get('logged_as') or ('price' not in gift):
                 continue
 
             if gift["remaining_price"] == 0:
@@ -427,7 +427,7 @@ with app.app_context():
 
         gifts = list()
         for gift in db.gifts.find({"owner_families": {"$in": user_families}}):
-            if str(gift["owner"]) == session.get('logged_as'):
+            if (str(gift["owner"]) == session.get('logged_as')) or ('price' not in gift):
                 continue
 
             if gift["remaining_price"] > 0 and gift["remaining_price"] < gift["price"]:
@@ -481,14 +481,14 @@ with app.app_context():
             return message_template(session, "danger", "invalid gift_id")
 
         try:
-            if int(data["amount"]) > gift["remaining_price"]:
+            if float(data["amount"]) > gift["remaining_price"]:
                 return message_template(session, "danger", "invalid participation! Amount must be less than the remaining price of the gift")
         except ValueError as e:
             return message_template(session, "danger", "participation must be a valid number")
 
         db.gifts.update_one({"_id": ObjectId(data["gift_id"])}, {
-            "$set": {"remaining_price": gift["remaining_price"] - int(data["amount"])},
-            "$push": {"participations": {"user": ObjectId(session.get('logged_as')), "amount": data["amount"]}}
+            "$set": {"remaining_price": round(gift["remaining_price"] - float(data["amount"]), 2)},
+            "$push": {"participations": {"user": ObjectId(session.get('logged_as')), "name": session.get('display_name'), "amount": data["amount"]}}
         })
 
         return message_template(session, "success", "Votre participation a bien été enregistrée !")
