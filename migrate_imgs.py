@@ -23,6 +23,7 @@ def migrate(dry_run=True):
     count_gifts = 0
     count_missing_img = 0
     count_updated = 0
+    count_updated_empty = 0
 
     # iterate over gifts
     for db_gift in db.gifts.find():
@@ -30,6 +31,13 @@ def migrate(dry_run=True):
 
         if 'image' not in db_gift:
             count_missing_img += 1
+
+            if not dry_run:
+                db.gifts.update_one({"_id": ObjectId(db_gift["_id"])}, {
+                    "$set": {"image": 'gift'}
+                })
+                count_updated += 1
+
             continue
 
         b64code = db_gift['image'].decode()
