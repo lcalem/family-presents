@@ -9,7 +9,7 @@ build_prod:
 	docker build -t ${PROJECT_NAME}_prod -f docker/Dockerfile-nginx-flask .
 
 up_db_dev:
-	docker-compose -f docker/docker-compose-dev.yml up -d mongo
+	export PROJECT_HOME=$(CURDIR) && docker-compose -f docker/docker-compose-dev.yml up -d mongo
 
 up_db_prod:
 	docker-compose -f docker/docker-compose-prod.yml up -d mongo_prod
@@ -18,7 +18,7 @@ run_dev:
 	# docker run -it --name ${PROJECT_NAME}_dev_${USER} ${SHARED} -v ${PROJECT_HOME}/src:/src/ -v ${PROJECT_HOME}:/workspace/ -v /var/run/docker.sock:/var/run/docker.sock:ro -p 5555:5555 ${PROJECT_NAME}_dev
 	set -a
 	export PROJECT_HOME=$(CURDIR) && docker-compose -f docker/docker-compose-dev.yml up -d server
-	docker logs -f docker_server_1  # docker compose name
+	docker logs -f docker-server-1  # docker compose name
 
 run_prod:
 	docker-compose -f docker/docker-compose-prod.yml up -d server_prod

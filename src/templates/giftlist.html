@@ -2,88 +2,105 @@
 {% block content %}
 
 <h2>{{ title }}</h2>
+<div class="gift-container">
+    {% for gift in gifts %}
+        <div class="gift-box d-flex flex-column">
+            {% if gift.owner == userid %}
+                <span onclick="popDeleteGift('{{gift._id}}', '{{gift.title}}');"><i class="fas fa-times delete-cross"></i></span>
 
-{% for gift in gifts %}
-    <div class="gift-box">
-        {% if gift.owner == userid %}
-            <span onclick="popDeleteGift('{{gift._id}}', '{{gift.title}}');"><i class="fas fa-times delete-cross"></i></span>
-
-            {% if gift.price %}
-                <a href="/updategift/{{gift._id}}"><i class="far fa-edit edit-gift"></i></a>
+                {% if gift.price %}
+                    <a href="/updategift/{{gift._id}}"><i class="far fa-edit edit-gift"></i></a>
+                {% endif %}
             {% endif %}
-        {% endif %}
 
-        <div class="gift-img-wrap">
-            <span class="img-helper"></span><img class="gift-img" src="data:image/png;base64,{{ gift.image }}" />
-        </div>
-        <span class="gift-title">{{ gift.title }}</span><br/>
-        <dl class="row gift-details">
-            <dt class="col-sm-3">Pour</dt>
-            <dd class="col-sm-9">{{ gift.owner_name }}</dd>
-            <dt class="col-sm-3">Où</dt>
-            <dd class="col-sm-9">{{ gift.location }}</dd>
+            <div class="gift-img-wrap">
+                <span class="img-helper"></span><img class="gift-img" src="data:image/png;base64,{{ gift.image }}" />
+            </div>
+            <span class="gift-title">{{ gift.title }}</span><br/>
+            <dl class="row gift-details">
+                <dt class="col-sm-3">Pour</dt>
+                <dd class="col-sm-9">{{ gift.owner_name }}</dd>
+            {% if gift.location %}
+                <dt class="col-sm-3">Où</dt>
+                <dd class="col-sm-9">{{ gift.location }}</dd>
+            {% endif %}
+                
+                {% if gift.notes %}
+                    <dt class="col-sm-3">Notes</dt>
+                    <dd class="col-sm-9">
+                        <input type="checkbox" id="toggle">
+                        <div class="notes">{{ gift.notes }}</div>
+                        <label for="toggle" class="more toggle-button btn btn-link p-0 m-0">
+                            Afficher plus
+                        </label>
+                        <label for="toggle" class="less toggle-button btn btn-link p-0 m-0">
+                            Afficher moins
+                        </label>
+                    </dd>
+                {% endif %}
 
-            {% if gift.price %}
-                <dt class="col-sm-3">Prix</dt>
-                <dd class="col-sm-9">{{ gift.price }} €
-                    {% if gift.owner != userid %}
-                        {% if gift.remaining_price == 0 %}
-                            <span class="gifted-badge badge badge-pill badge-success">Offert !</span>
-                        {% else %}
-                            {% if gift.remaining_price == (gift.remaining_price | int) %}
-                                (reste {{ gift.remaining_price | int }})
+                {% if gift.price %}
+                    <dt class="col-sm-3">Prix</dt>
+                    <dd class="col-sm-9">{{ gift.price }} €
+                        {% if gift.owner != userid %}
+                            {% if gift.remaining_price == 0 %}
+                                <span class="gifted-badge badge badge-pill badge-success">Offert !</span>
                             {% else %}
-                                (reste {{ gift.remaining_price }})
+                                {% if gift.remaining_price == (gift.remaining_price | int) %}
+                                    (reste {{ gift.remaining_price | int }})
+                                {% else %}
+                                    (reste {{ gift.remaining_price }})
+                                {% endif %}
+                            {% endif %}
+
+                            {% if gift.participations %}
+                                <i class="fas fa-info-circle tooltipi">
+                                    <dl class="tooltiptexti">
+                                        {% for part in gift.participations %}
+                                            <dt>{{ part.name }}</dt>
+                                            <dd>{{part.amount}} €</dd>
+                                        {% endfor %}
+                                    </dl>
+                                </i>
                             {% endif %}
                         {% endif %}
+                    </dd>
+                {% else %}
+                    <dt class="col-sm-3" style="visibility: hidden;">Placeholder</dt>
+                {% endif %}
 
-                        {% if gift.participations %}
-                            <i class="fas fa-info-circle tooltipi">
-                                <dl class="tooltiptexti">
-                                    {% for part in gift.participations %}
-                                        <dt>{{ part.name }}</dt>
-                                        <dd>{{part.amount}} €</dd>
-                                    {% endfor %}
-                                </dl>
-                            </i>
-                        {% endif %}
-                    {% endif %}
-                </dd>
-            {% else %}
-                <dt class="col-sm-3" style="visibility: hidden;">Placeholder</dt>
-            {% endif %}
+                {% if gift.url %}
+                    <dt class="col-sm-3">Lien</dt>
+                    <dd class="col-sm-9"><a href="{{ gift.url }}">Cliquez ici</a></dd>
+                {% else %}
+                    <dt class="col-sm-3" style="visibility: hidden;">Placeholder</dt>
+                {% endif %}
+            </dl>
+            <div class="spacer"></div>
 
-            {% if gift.url %}
-                <dt class="col-sm-3">Lien</dt>
-                <dd class="col-sm-9"><a href="{{ gift.url }}">cliquez ici</a></dd>
-            {% else %}
-                <dt class="col-sm-3" style="visibility: hidden;">Placeholder</dt>
-            {% endif %}
-        </dl>
+            {% if gift.owner != userid and gift.price and gift.remaining_price > 0 %}
+                <button type="button" class="btn btn-primary btn-participate align-self-center" id="btn-participate-{{ loop.index }}" onclick="participate({{ loop.index }});">Participer</button>
 
-        {% if gift.owner != userid and gift.price and gift.remaining_price > 0 %}
-            <button type="button" class="btn btn-primary btn-participate" id="btn-participate-{{ loop.index }}" onclick="participate({{ loop.index }});">Participer</button>
+                <form class="form-gift" method="POST" action="/participate">
+                    <div class="div-gift" id="div-gift-{{ loop.index }}">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">€</span>
+                            </div>
 
-            <form class="form-gift" method="POST" action="/participate">
-                <div class="div-gift" id="div-gift-{{ loop.index }}">
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">€</span>
+                            <input name="gift_id" value="{{gift._id}}" hidden />
+                            <input name="amount" id="gift-amount-{{ loop.index }}" type="text" class="form-control" aria-label="Montant" onkeypress="return checkNumber(event, {{gift.remaining_price}})" />
+                            <div class="input-group-append btn-validate">
+                                <button type="submit" class="input-group-text btn btn-success">Valider</button>
+                            </div>
+
                         </div>
-
-                        <input name="gift_id" value="{{gift._id}}" hidden />
-                        <input name="amount" id="gift-amount-{{ loop.index }}" type="text" class="form-control" aria-label="Montant" onkeypress="return checkNumber(event, {{gift.remaining_price}})" />
-                        <div class="input-group-append btn-validate">
-                            <button type="submit" class="input-group-text btn btn-success">Valider</button>
-                        </div>
-
                     </div>
-                </div>
-            </form>
-        {% endif %}
+                </form>
+            {% endif %}
 
-    </div>
-{% endfor %}
-
+        </div>
+    {% endfor %}
+</div>
 {% endblock %}
 

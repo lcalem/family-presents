@@ -70,6 +70,9 @@ with app.app_context():
 
         if raw_data['title']:
             update_data['title'] = raw_data['title']
+        
+        if raw_data['notes']:
+            update_data['notes'] = raw_data['notes']
 
         if raw_data['location']:
             update_data['location'] = raw_data['location']
@@ -86,7 +89,7 @@ with app.app_context():
     def format_gift_data(raw_data):
         '''
         formatting user input
-        raw gift data {'title': ['truc'], 'price': [''], 'location': [''], 'link': [''], 'image': ['']}
+        raw gift data {'title': ['truc'], 'notes':[''], 'price': [''], 'location': [''], 'link': [''], 'image': ['']}
         TODO: fix image storing, putting the image in mongodb was pretty shitty anyway (store md5 and url + put image on file storage)
         '''
 
@@ -98,6 +101,7 @@ with app.app_context():
 
         gift_data = {
             "title": raw_data["title"],
+            "notes": raw_data["notes"],
             "price": price,
             "location": raw_data["location"]
         }
@@ -229,7 +233,7 @@ with app.app_context():
         db = get_db()
         user = db.users.find_one({"_id": db_gift["owner"]})
 
-        template_gift = {k: v for k, v in db_gift.items() if k in ["title", "price", "location", "url", "remaining_price", "participations"]}
+        template_gift = {k: v for k, v in db_gift.items() if k in ["title", "notes", "price", "location", "url", "remaining_price", "participations"]}
 
         template_gift['owner'] = str(user['_id'])
         template_gift['owner_name'] = user["name"]

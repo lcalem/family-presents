@@ -3,6 +3,9 @@
     <div class="message alert alert-{{ message_type }}">
         <h1>Message</h1>
         <p>{{ message_content }}</p>
+        {% if message_type == "danger" %}
+            <a href="#" onclick="window.history.go(-1); return false;" class="btn btn-xs btn-{{ message_type }} pull-right">Retour</a>
+        {% endif %}
         <a href="/giftlist/user/{{ userid }}" class="btn btn-xs btn-{{ message_type }} pull-right">Voir ma liste</a>
         <a href="/addgift" class="btn btn-xs btn-{{ message_type }} pull-right">Ajouter un souhait</a>
     </div>
