@@ -60,7 +60,7 @@ with app.app_context():
 
         if raw_data.get('price'):
             m = re.match(r"^[0-9]*([,|.]{0,1}[0-9]+)", raw_data["price"])
-            price = float(m.group(0).replace(',', '.'))
+            price = round(float(m.group(0).replace(',', '.')))
 
             if price == 0:
                 raise Exception("Les cadeaux gratuits ne sont toujours pas gérés ! (mettez un euro symbolique)")
@@ -91,7 +91,7 @@ with app.app_context():
         '''
 
         m = re.match(r"^[0-9]*([,|.]{0,1}[0-9]+)", raw_data["price"])
-        price = float(m.group(0).replace(',', '.'))
+        price = round(float(m.group(0).replace(',', '.')))
 
         if price == 0:
             raise Exception("Les cadeaux gratuits ne sont pas encore gérés ! (mettez un euro symbolique)")
