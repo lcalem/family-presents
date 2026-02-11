@@ -18,7 +18,7 @@ Guide intended for technical people, I don't have a general install yet sorry.
 4. `cd` in the repo and build the docker using `make build_prod`
 5. Up the server and the DB using `make run_all_prod`
 6. Go in the db container (`docker exec -it docker_mongo_prod_1 mongo`) and set the active db to "data" (mongo> `use data`)
-7. Insert users of your system `db.users.insert({"name": "<DISPLAY_NAME>", "username": "<USERNAME>", "password": "<PASSWORD>"})`
+7. Insert users of your system `db.users.insert({"name": "<DISPLAY_NAME>", "username": "<USERNAME>", "password": "<PASSWORD_HASH>", "families":["Smith", "Dupond"]})`
 
 After this procedure the website should be up and running on your server, to make it accessible from a specific URL you own you then need to make a DNS redirection to your server IP.
 
